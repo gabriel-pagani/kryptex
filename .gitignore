@@ -210,8 +210,7 @@ __marimo__/
 # Wheels
 *.whl
 
-# Sensitive data
-database/
-certbot/
-cert.crt
-cert.key
+# Certificados SSL
+*.crt
+*.key
+*.pem
