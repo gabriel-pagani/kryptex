@@ -1,7 +1,65 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
 from .forms import CustomUserCreationForm, CustomUserChangeForm
-from .models import Users
+from .models import Users, Credential
+from .crypto import encrypt_text, decrypt_text
+from django import forms
+
+
+# 1. Formulário personalizado para lidar com a criptografia na entrada
+class CredentialForm(forms.ModelForm):
+    # Campo "falso" para entrada da senha
+    password_input = forms.CharField(
+        label="Senha (Texto Plano)",
+        required=False,
+        widget=forms.PasswordInput(render_value=True),
+        help_text="Digite uma nova senha aqui para alterar. Deixe em branco para manter a atual."
+    )
+
+    class Meta:
+        model = Credential
+        fields = '__all__'
+
+    def save(self, commit=True):
+        credential = super().save(commit=False)
+        
+        # Se o usuário digitou algo no campo de senha, criptografa e salva
+        password = self.cleaned_data.get('password_input')
+        if password:
+            credential.encrypted_password = encrypt_text(password)
+            
+        if commit:
+            credential.save()
+        return credential
+
+# 2. Configuração do Admin
+@admin.register(Credential)
+class CredentialAdmin(admin.ModelAdmin):
+    form = CredentialForm
+    list_display = ('service_name', 'username', 'user', 'updated_at')
+    search_fields = ('service_name', 'username')
+    list_filter = ('user',)
+    
+    # Configura quais campos aparecem e a ordem (incluindo o visualizador de senha)
+    fields = (
+        'user', 
+        'service_name', 
+        'username', 
+        'password_input', # Campo para digitar
+        'encrypted_password',
+        'view_decrypted_password', # Campo para ver (somente leitura)
+        'website_url', 
+        'notes'
+    )
+    readonly_fields = ('view_decrypted_password',)
+
+    # Método para mostrar a senha descriptografada na tela
+    def view_decrypted_password(self, obj):
+        if obj.encrypted_password:
+            return decrypt_text(obj.encrypted_password)
+        return "---"
+    
+    view_decrypted_password.short_description = "Senha Atual (Descriptografada)"
 
 
 # Users Admin

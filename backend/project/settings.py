@@ -125,6 +125,8 @@ SESSION_EXPIRE_AT_BROWSER_CLOSE = True
 
 SESSION_SAVE_EVERY_REQUEST = True
 
+ENCRYPTION_KEY = os.getenv('ENCRYPTION_KEY', 'insecure-key')
+
 try:
     from project.local_settings import *
 except ImportError:
