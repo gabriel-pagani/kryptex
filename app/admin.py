@@ -1,10 +1,13 @@
 from django.contrib import admin
-from .models import Logins
+from .models import Logins, LoginTypes
 from .forms import LoginsForm
 
+
+admin.site.register(LoginTypes)
 
 @admin.register(Logins)
 class LoginsAdmin(admin.ModelAdmin):
     form = LoginsForm
-    list_display = ('service', 'login', 'updated_at', 'created_at')
-    search_fields = ('service', 'login')
+    list_display = ('service', 'type', 'login', 'updated_at', 'created_at')
+    search_fields = ('service', 'type', 'login')
+    list_filter = ('type',)
