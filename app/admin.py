@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Credential
+from .models import Logins
 
 
-admin.site.register(Credential)
+admin.site.register(Logins)
