@@ -7,13 +7,15 @@ from pathlib import Path
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-SECRET_KEY = os.getenv('SECRET_KEY', 'insecure-key')
+SECRET_KEY = None
 
-DEBUG = os.getenv('DEBUG', '1') == '1'
+DEBUG = None
 
-ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', '127.0.0.1').split(',')
+ALLOWED_HOSTS = None
 
-CSRF_TRUSTED_ORIGINS = os.getenv('CSRF_TRUSTED_ORIGINS', 'http://127.0.0.1').split(',')
+CSRF_TRUSTED_ORIGINS = None
+
+ENCRYPTION_KEY = None
 
 INSTALLED_APPS = [
     'django.contrib.admin',
@@ -107,8 +109,6 @@ SESSION_COOKIE_AGE = 60 * 60 * 6
 SESSION_EXPIRE_AT_BROWSER_CLOSE = True
 
 SESSION_SAVE_EVERY_REQUEST = True
-
-ENCRYPTION_KEY = os.getenv('ENCRYPTION_KEY', 'insecure-key')
 
 try:
     from project.local_settings import *
