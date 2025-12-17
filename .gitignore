@@ -213,3 +213,5 @@ __marimo__/
 # Sensitive data
 database/
 certbot/
+cert.crt
+cert.key
