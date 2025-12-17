@@ -4,7 +4,10 @@ from .crypto import decrypt_text
 
 
 class LoginsForm(forms.ModelForm):
-    password = forms.CharField(widget=forms.TextInput(attrs={'class': 'vTextField'}))
+    password = forms.CharField(
+        required=False, 
+        widget=forms.TextInput(attrs={'class': 'vTextField'})
+    )
 
     class Meta:
         model = Logins
