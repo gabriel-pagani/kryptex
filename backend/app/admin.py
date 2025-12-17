@@ -1,38 +1,10 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
-from .forms import CustomUserCreationForm, CustomUserChangeForm
+from .forms import CustomUserCreationForm, CustomUserChangeForm, CredentialForm
 from .models import Users, Credential
-from .crypto import encrypt_text, decrypt_text
-from django import forms
+from .crypto import decrypt_text
 
 
-# 1. Formulário personalizado para lidar com a criptografia na entrada
-class CredentialForm(forms.ModelForm):
-    # Campo "falso" para entrada da senha
-    password_input = forms.CharField(
-        label="Senha (Texto Plano)",
-        required=False,
-        widget=forms.PasswordInput(render_value=True),
-        help_text="Digite uma nova senha aqui para alterar. Deixe em branco para manter a atual."
-    )
-
-    class Meta:
-        model = Credential
-        fields = '__all__'
-
-    def save(self, commit=True):
-        credential = super().save(commit=False)
-        
-        # Se o usuário digitou algo no campo de senha, criptografa e salva
-        password = self.cleaned_data.get('password_input')
-        if password:
-            credential.encrypted_password = encrypt_text(password)
-            
-        if commit:
-            credential.save()
-        return credential
-
-# 2. Configuração do Admin
 @admin.register(Credential)
 class CredentialAdmin(admin.ModelAdmin):
     form = CredentialForm
