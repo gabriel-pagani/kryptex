@@ -1,12 +1,26 @@
-migrate:
-	@python manage.py makemigrations && python manage.py migrate
+build-system:
+	docker compose up -d --build
 
-runserver:
-ifeq ($(ssl),true)
-	@python manage.py runserver_plus --cert-file cert.crt
-else
-	@python manage.py runserver
-endif
+start-system:
+	docker compose up -d
 
-createsuperuser:
-	@python manage.py shell -c "from django.contrib.auth.models import User; User.objects.filter(username='admin').exists() or User.objects.create_superuser(username='admin', password='1234')"
+stop-system:
+	docker compose down
+
+restart-system:
+	docker compose down && docker compose up -d
+
+container-terminal:
+	docker compose exec app sh
+
+container-logs:
+	docker compose logs -f
+
+list-images:
+	docker images
+
+list-volumes:
+	docker volume ls
+
+list-containers:
+	docker ps -a
