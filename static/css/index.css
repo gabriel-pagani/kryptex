@@ -98,6 +98,10 @@ body {
   padding: 12px;
   border-bottom: 1px solid var(--border);
   vertical-align: top;
+
+  /* evita quebrar e aumentar a altura da linha */
+  flex-wrap: nowrap;
+  white-space: nowrap;
 }
 
 .td-strong {
