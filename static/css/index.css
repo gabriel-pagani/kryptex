@@ -161,3 +161,28 @@ body {
   color: var(--muted);
   font-size: 13px;
 }
+
+/* Oculta scrollbar */
+html,
+body {
+  -ms-overflow-style: none; /* IE/Edge legado */
+  scrollbar-width: none;    /* Firefox */
+}
+
+html::-webkit-scrollbar,
+body::-webkit-scrollbar {
+  width: 0;
+  height: 0;
+  display: none; /* WebKit */
+}
+
+.tableWrap {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.tableWrap::-webkit-scrollbar {
+  width: 0;
+  height: 0;
+  display: none;
+}
