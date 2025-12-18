@@ -32,7 +32,7 @@ class Logins(models.Model):
 
     def save(self, *args, **kwargs):
         if not self.password:
-            alphabet = string.ascii_letters + string.digits + string.punctuation
+            alphabet = string.ascii_letters + string.digits + '!@#$%&?-_=+.,:()[]{}'
             generated_password = ''.join(secrets.choice(alphabet) for _ in range(50))
             self.password = generated_password
 
