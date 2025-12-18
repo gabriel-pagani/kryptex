@@ -1,5 +1,5 @@
 from django.db import models
-from .crypto import encrypt_text
+from .crypto import encrypt_text, decrypt_text
 import string
 import secrets
 
@@ -42,6 +42,10 @@ class Logins(models.Model):
         
         super().save(*args, **kwargs)
         self._original_password = self.password
+
+    @property
+    def decrypted_password(self):
+        return decrypt_text(self.password)
 
     def __str__(self):
         return self.service

@@ -8,8 +8,105 @@
     <link href="{% static 'images/icon.png' %}" rel="icon" />
     <link href="{% static 'css/reset.css' %}" rel="stylesheet" />
     <link href="{% static 'css/index.css' %}" rel="stylesheet" />
+    <script src="https://kit.fontawesome.com/d83dc2ff38.js"></script>
   </head>
   <body>
+    <header class="topbar">
+      <div class="topbar__left">
+        <h1 class="brand">Kryptex</h1>
+      </div>
+
+      <div class="topbar__right">
+        <a class="btn" href="/admin/" target="_self" title="Acessar Portal de Administração">
+          <i class="fa-solid fa-gear"></i>
+        </a>
+      </div>
+    </header>
+
+    <main class="container">
+      <form class="search" method="get" action="">
+        <input
+          class="search__input"
+          type="text"
+          name="q"
+          value="{{ q }}"
+          placeholder="Busque por serviços, tipos ou logins aqui..."
+          autocomplete="off"
+        />
+        <button class="btn btn--primary" type="submit">Buscar</button>
+        {% if q %}
+          <a class="btn btn--ghost" href="/">Limpar</a>
+        {% endif %}
+      </form>
+
+      <section class="card">
+        <div class="card__header">
+          <h2>Logins</h2>
+          <span class="muted">{{ logins|length }} registro(s)</span>
+        </div>
+
+        <div class="tableWrap">
+          <table class="table">
+            <thead>
+              <tr>
+                <th>Serviço</th>
+                <th>Tipo</th>
+                <th>Login</th>
+                <th>Senha</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for item in logins %}
+                <tr>
+                  <td>{{ item.service }}</td>
+                  <td>{{ item.type.title|default:"—" }}</td>
+                  <td>
+                    <div class="cellActions">
+                      <div>{{ item.login }}</div>
+                      <button class="btn btn--tiny js-copy" type="button" data-copy="{{ item.login }}" title="Copiar Login">
+                        <i class="fa-regular fa-copy"></i>
+                      </button>
+                    </div>
+                  </td>
+                  <td>
+                    <div class="cellActions">
+                      <div
+                        class="js-secret"
+                        data-secret="{{ item.decrypted_password|default:'' }}"
+                        data-masked="••••••••"
+                      >••••••••</div>
+
+                      <button
+                        class="btn btn--tiny js-toggle-secret"
+                        type="button"
+                        aria-pressed="false"
+                        title="Exibir/ocultar senha"
+                      >
+                        <i class="fa-regular fa-eye"></i>
+                      </button>
+
+                      <button
+                        class="btn btn--tiny js-copy"
+                        type="button"
+                        data-copy="{{ item.decrypted_password|default:'' }}"
+                        title="Copiar Senha"
+                      >
+                        <i class="fa-regular fa-copy"></i>
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              {% empty %}
+                <tr>
+                  <td colspan="5" class="muted">Nenhum login encontrado.</td>
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </section>
+    </main>
+
     <script src="{% static 'js/index.js' %}"></script>
   </body>
 </html>
