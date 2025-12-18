@@ -109,7 +109,10 @@ body {
   color: var(--muted);
   padding: 12px;
   border-bottom: 1px solid var(--border);
-  background: rgba(0, 0, 0, 0.2);
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  background: #0d1326;
 }
 
 .table tbody td {
