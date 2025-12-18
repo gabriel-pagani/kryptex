@@ -2,11 +2,16 @@ SECRET_KEY = 'CHANGE-ME'
 
 DEBUG = True
 
-ALLOWED_HOSTS = ['*']
+ALLOWED_HOSTS = [
+    '127.0.0.1', 
+    'localhost'
+]
 
 CSRF_TRUSTED_ORIGINS = [
-    'http://',
-    'https://'
+    'https://127.0.0.1:8000', 
+    'http://127.0.0.1:8000', 
+    'https://localhost:8000',
+    'http://localhost:8000'
 ]
 
 ENCRYPTION_KEY = 'CHANGE-ME'
