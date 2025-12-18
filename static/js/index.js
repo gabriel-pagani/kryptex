@@ -34,7 +34,41 @@
     btn.dataset.restoreTimerId = String(id);
   }
 
+  function toggleSecret(toggleBtn) {
+    const wrap = toggleBtn.closest(".cellActions");
+    if (!wrap) return;
+
+    const secretEl = wrap.querySelector(".js-secret");
+    if (!secretEl) return;
+
+    const secret = secretEl.getAttribute("data-secret") || "";
+    const masked = secretEl.getAttribute("data-masked") || "••••••••";
+
+    // se não houver segredo, mantém mascarado
+    if (!secret) {
+      secretEl.textContent = masked;
+      toggleBtn.setAttribute("aria-pressed", "false");
+      toggleBtn.innerHTML = '<i class="fa-regular fa-eye"></i>';
+      return;
+    }
+
+    const isPressed = toggleBtn.getAttribute("aria-pressed") === "true";
+    const nextPressed = !isPressed;
+
+    toggleBtn.setAttribute("aria-pressed", String(nextPressed));
+    secretEl.textContent = nextPressed ? secret : masked;
+    toggleBtn.innerHTML = nextPressed
+      ? '<i class="fa-regular fa-eye-slash"></i>'
+      : '<i class="fa-regular fa-eye"></i>';
+  }
+
   document.addEventListener("click", async (ev) => {
+    const toggleBtn = ev.target.closest(".js-toggle-secret");
+    if (toggleBtn) {
+      toggleSecret(toggleBtn);
+      return;
+    }
+
     const btn = ev.target.closest(".js-copy");
     if (!btn) return;
 
