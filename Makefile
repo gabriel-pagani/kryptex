@@ -1,26 +1,29 @@
 build-system:
-	docker compose up -d --build
+	@docker compose up -d --build
 
 start-system:
-	docker compose up -d
+	@docker compose up -d
 
 stop-system:
-	docker compose down
+	@docker compose down
 
 restart-system:
-	docker compose down && docker compose up -d
+	@docker compose down && docker compose up -d
+
+create-superuser:
+	@docker compose exec app python manage.py shell -c "from django.contrib.auth.models import User; User.objects.filter(username='admin').exists() or User.objects.create_superuser(username='admin', password='1234')"
 
 container-terminal:
-	docker compose exec app sh
+	@docker compose exec app sh
 
 container-logs:
-	docker compose logs -f
+	@docker compose logs -f
 
 list-images:
-	docker images
+	@docker images
 
 list-volumes:
-	docker volume ls
+	@docker volume ls
 
 list-containers:
-	docker ps -a
+	@docker ps -a

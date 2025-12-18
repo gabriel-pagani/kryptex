@@ -13,6 +13,5 @@ services:
       - .:/app
     command: >
       sh -c "python manage.py migrate && 
-             python manage.py shell -c \"from django.contrib.auth.models import User; User.objects.filter(username='admin').exists() or User.objects.create_superuser(username='admin', password='1234')\" &&
              python manage.py runserver_plus --cert-file cert.crt 0.0.0.0:8000"
     restart: unless-stopped
