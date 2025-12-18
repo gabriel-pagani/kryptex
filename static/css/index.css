@@ -62,15 +62,32 @@ body {
   display: flex;
   gap: 10px;
   margin: 16px 0;
+  flex-wrap: wrap;
+  align-items: stretch;
 }
 
 .search__input {
-  flex: 1;
+  flex: 1 1 260px;
+  min-width: 0;
   padding: 10px 12px;
   border: 1px solid var(--border);
   border-radius: 10px;
   background: rgba(255, 255, 255, 0.04);
   color: var(--text);
+}
+
+.search .btn {
+  white-space: nowrap;
+}
+
+@media (max-width: 520px) {
+  .search {
+    gap: 8px;
+  }
+
+  .search .btn {
+    flex: 1 1 calc(50% - 4px);
+  }
 }
 
 .tableWrap {
