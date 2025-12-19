@@ -17,11 +17,17 @@ ENV PYTHONUNBUFFERED=1
 
 WORKDIR /app
 
-RUN apt-get update && apt-get install -y libsasl2-2 libldap-2.5-0 --no-install-recommends && \
+RUN apt-get update && apt-get install -y libsasl2-2 libldap-2.5-0 openssl --no-install-recommends && \
     rm -rf /var/lib/apt/lists/*
 
 COPY --from=builder /install /usr/local
 
+# RUN useradd -m appuser
+
 COPY . .
+
+# RUN chown -R appuser:appuser /app
+
+# USER appuser
 
 EXPOSE 8000
