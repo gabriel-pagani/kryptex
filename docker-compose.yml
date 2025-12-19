@@ -8,11 +8,12 @@ services:
     image: kryptex
     container_name: kryptex
     ports:
-      - "8000:8000"
+      - "127.0.0.1:443:8000"
     volumes:
       - .:/app
     command: >
-      sh -c "python manage.py migrate && 
+      sh -c "openssl req -x509 -newkey rsa:4096 -keyout key.pem -out cert.pem -days 365 -nodes -subj '/CN=localhost' 2>/dev/null &&
+             python manage.py migrate && 
              python manage.py collectstatic --noinput && 
-             python manage.py runserver_plus --cert-file cert.crt 0.0.0.0:8000"
+             gunicorn project.wsgi:application --bind 0.0.0.0:8000 --certfile=cert.pem --keyfile=key.pem"
     restart: unless-stopped

@@ -85,12 +85,8 @@
                     </td>
 
                     <td>
-                      <div class="cellActions">
-                        <div
-                          class="js-secret"
-                          data-secret="{{ item.decrypted_password|default:'' }}"
-                          data-masked="••••••••"
-                        >••••••••</div>
+                      <div class="cellActions" data-id="{{ item.id }}">
+                        <div class="js-secret-display">••••••••</div>
 
                         <button
                           class="btn btn--tiny js-toggle-secret"
@@ -102,9 +98,8 @@
                         </button>
 
                         <button
-                          class="btn btn--tiny js-copy"
+                          class="btn btn--tiny js-copy-password"
                           type="button"
-                          data-copy="{{ item.decrypted_password|default:'' }}"
                           title="Copiar Senha"
                         >
                           <i class="fa-regular fa-copy"></i>

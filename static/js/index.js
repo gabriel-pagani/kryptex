@@ -36,7 +36,21 @@
     syncFolderUI(folderRow);
   }
 
+  async function fetchPassword(id) {
+    try {
+      const resp = await fetch(`/api/password/${id}/`);
+      if (!resp.ok) throw new Error("Erro");
+      const data = await resp.json();
+      return data.password;
+    } catch (e) {
+      console.error(e);
+      return null;
+    }
+  }
+
+  // Função genérica de copy
   async function copyText(text) {
+    if (!text) return false;
     try {
       await navigator.clipboard.writeText(text);
       return true;
@@ -45,58 +59,71 @@
     }
   }
 
+  // Ícone de feedback visual
   function setTempIcon(btn, ok) {
-    // salva o HTML original uma única vez
     if (!btn.dataset.originalHtml) {
       btn.dataset.originalHtml = btn.innerHTML;
     }
-
-    // se já houver um timer rodando, cancela
     if (btn.dataset.restoreTimerId) {
       clearTimeout(Number(btn.dataset.restoreTimerId));
-      btn.dataset.restoreTimerId = "";
     }
-
-    // troca pelo ícone de sucesso/erro
     btn.innerHTML = ok
       ? '<i class="fa-solid fa-check"></i>'
       : '<i class="fa-solid fa-xmark"></i>';
-
-    // restaura depois de um tempo
+    
     const id = setTimeout(() => {
       btn.innerHTML = btn.dataset.originalHtml;
       btn.dataset.restoreTimerId = "";
-    }, 900);
-
+    }, 1000);
     btn.dataset.restoreTimerId = String(id);
   }
 
-  function toggleSecret(toggleBtn) {
+  // Lógica do botão "Olho"
+  async function toggleSecret(toggleBtn) {
     const wrap = toggleBtn.closest(".cellActions");
-    if (!wrap) return;
-
-    const secretEl = wrap.querySelector(".js-secret");
-    if (!secretEl) return;
-
-    const secret = secretEl.getAttribute("data-secret") || "";
-    const masked = secretEl.getAttribute("data-masked") || "••••••••";
-
-    // se não houver segredo, mantém mascarado
-    if (!secret) {
-      secretEl.textContent = masked;
+    const displayEl = wrap.querySelector(".js-secret-display");
+    const id = wrap.dataset.id;
+    
+    const isPressed = toggleBtn.getAttribute("aria-pressed") === "true";
+    
+    if (isPressed) {
+      // Ocultar
+      displayEl.textContent = "••••••••";
       toggleBtn.setAttribute("aria-pressed", "false");
       toggleBtn.innerHTML = '<i class="fa-regular fa-eye"></i>';
-      return;
+    } else {
+      // Exibir - Busca no servidor
+      toggleBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i>'; // Loading
+      const password = await fetchPassword(id);
+      
+      if (password) {
+        displayEl.textContent = password;
+        toggleBtn.setAttribute("aria-pressed", "true");
+        toggleBtn.innerHTML = '<i class="fa-regular fa-eye-slash"></i>';
+      } else {
+        setTempIcon(toggleBtn, false); // Erro
+        toggleBtn.innerHTML = '<i class="fa-regular fa-eye"></i>';
+      }
+    }
+  }
+
+  // Lógica do botão "Copiar Senha"
+  async function copyPasswordHandler(btn) {
+    const wrap = btn.closest(".cellActions");
+    const id = wrap.dataset.id;
+    const displayEl = wrap.querySelector(".js-secret-display");
+    
+    // Se já estiver visível na tela, copia direto do texto
+    let password = displayEl.textContent;
+    if (password === "••••••••") {
+       // Se estiver oculto, busca no servidor pra copiar
+       btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i>';
+       password = await fetchPassword(id);
+       btn.innerHTML = '<i class="fa-regular fa-copy"></i>'; // Restaura ícone
     }
 
-    const isPressed = toggleBtn.getAttribute("aria-pressed") === "true";
-    const nextPressed = !isPressed;
-
-    toggleBtn.setAttribute("aria-pressed", String(nextPressed));
-    secretEl.textContent = nextPressed ? secret : masked;
-    toggleBtn.innerHTML = nextPressed
-      ? '<i class="fa-regular fa-eye-slash"></i>'
-      : '<i class="fa-regular fa-eye"></i>';
+    const ok = await copyText(password);
+    setTempIcon(btn, ok);
   }
 
   function syncFolderUI(folderRow) {
@@ -163,13 +190,18 @@
       return;
     }
 
-    const btn = ev.target.closest(".js-copy");
-    if (!btn) return;
+    const copyLoginBtn = ev.target.closest(".js-copy");
+    if (copyLoginBtn) {
+      const text = copyLoginBtn.dataset.copy || "";
+      const ok = await copyText(text);
+      setTempIcon(copyLoginBtn, ok);
+      return;
+    }
 
-    const value = btn.getAttribute("data-copy") || "";
-    if (!value) return;
-
-    const ok = await copyText(value);
-    setTempIcon(btn, ok);
+    const copyPassBtn = ev.target.closest(".js-copy-password");
+    if (copyPassBtn) {
+      copyPasswordHandler(copyPassBtn);
+      return;
+    }
   });
 })();
