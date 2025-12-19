@@ -1,5 +1,6 @@
-from django.shortcuts import render
+from django.shortcuts import render, get_object_or_404
 from django.contrib.auth.decorators import user_passes_test
+from django.http import JsonResponse, HttpResponseForbidden
 from django.db.models import Q
 from .models import Logins
 
@@ -10,6 +11,7 @@ def home_view(request):
 
     logins = (
         Logins.objects.select_related("type")
+        .defer("password") 
         .all()
         .order_by("type__title", "service")
     )
@@ -36,3 +38,11 @@ def home_view(request):
         "index.html",
         {"groups": groups, "q": q, "total_count": total_count},
     )
+
+@user_passes_test(lambda u: u.is_active and u.is_staff)
+def get_password_api(request, login_id):
+    if request.method != "GET":
+        return HttpResponseForbidden()
+    
+    login_item = get_object_or_404(Logins, pk=login_id)
+    return JsonResponse({"password": login_item.decrypted_password})
