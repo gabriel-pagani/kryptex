@@ -212,3 +212,37 @@ body::-webkit-scrollbar {
   height: 0;
   display: none;
 }
+
+.folderRow td {
+  padding: 10px 12px;
+  background: rgba(255, 255, 255, 0.03);
+  border-bottom: 1px solid var(--border);
+}
+
+.folderRow {
+  cursor: pointer;
+}
+
+.folderRow__content {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.folderRow__icon {
+  width: 18px;
+  text-align: center;
+  color: var(--muted);
+}
+
+.folderRow__title {
+  flex: 0 1 auto;
+}
+
+.folderRow__count {
+  margin-left: auto;
+}
+
+.loginRow.is-hidden {
+  display: none;
+}

@@ -42,7 +42,7 @@
       <section class="card">
         <div class="card__header">
           <h2>Logins</h2>
-          <span class="muted">{{ logins|length }} registro(s)</span>
+          <span class="muted">{{ total_count }} registro(s)</span>
         </div>
 
         <div class="tableWrap">
@@ -50,55 +50,70 @@
             <thead>
               <tr>
                 <th>Serviço</th>
-                <th>Tipo</th>
                 <th>Login</th>
                 <th>Senha</th>
               </tr>
             </thead>
+
             <tbody>
-              {% for item in logins %}
-                <tr>
-                  <td>{{ item.service }}</td>
-                  <td>{{ item.type.title|default:"—" }}</td>
-                  <td>
-                    <div class="cellActions">
-                      <div>{{ item.login }}</div>
-                      <button class="btn btn--tiny js-copy" type="button" data-copy="{{ item.login }}" title="Copiar Login">
-                        <i class="fa-regular fa-copy"></i>
-                      </button>
-                    </div>
-                  </td>
-                  <td>
-                    <div class="cellActions">
-                      <div
-                        class="js-secret"
-                        data-secret="{{ item.decrypted_password|default:'' }}"
-                        data-masked="••••••••"
-                      >••••••••</div>
-
-                      <button
-                        class="btn btn--tiny js-toggle-secret"
-                        type="button"
-                        aria-pressed="false"
-                        title="Exibir/ocultar senha"
-                      >
-                        <i class="fa-regular fa-eye"></i>
-                      </button>
-
-                      <button
-                        class="btn btn--tiny js-copy"
-                        type="button"
-                        data-copy="{{ item.decrypted_password|default:'' }}"
-                        title="Copiar Senha"
-                      >
-                        <i class="fa-regular fa-copy"></i>
-                      </button>
+              {% for group in groups %}
+                <tr class="folderRow js-folder" data-group="{{ forloop.counter0 }}" aria-expanded="false">
+                  <td colspan="3">
+                    <div class="folderRow__content">
+                      <span class="folderRow__icon" aria-hidden="true">
+                        <i class="fa-solid fa-chevron-right"></i>
+                      </span>
+                      <strong class="folderRow__title">{{ group.title }}</strong>
+                      <span class="muted folderRow__count">{{ group.items|length }} registro(s)</span>
                     </div>
                   </td>
                 </tr>
+
+                {% for item in group.items %}
+                  <tr class="loginRow js-login-row is-hidden" data-group="{{ forloop.parentloop.counter0 }}">
+                    <td>{{ item.service }}</td>
+
+                    <td>
+                      <div class="cellActions">
+                        <div>{{ item.login }}</div>
+                        <button class="btn btn--tiny js-copy" type="button" data-copy="{{ item.login }}" title="Copiar Login">
+                          <i class="fa-regular fa-copy"></i>
+                        </button>
+                      </div>
+                    </td>
+
+                    <td>
+                      <div class="cellActions">
+                        <div
+                          class="js-secret"
+                          data-secret="{{ item.decrypted_password|default:'' }}"
+                          data-masked="••••••••"
+                        >••••••••</div>
+
+                        <button
+                          class="btn btn--tiny js-toggle-secret"
+                          type="button"
+                          aria-pressed="false"
+                          title="Exibir/ocultar senha"
+                        >
+                          <i class="fa-regular fa-eye"></i>
+                        </button>
+
+                        <button
+                          class="btn btn--tiny js-copy"
+                          type="button"
+                          data-copy="{{ item.decrypted_password|default:'' }}"
+                          title="Copiar Senha"
+                        >
+                          <i class="fa-regular fa-copy"></i>
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                {% endfor %}
               {% empty %}
                 <tr>
-                  <td colspan="5" class="muted">Nenhum login encontrado.</td>
+                  <td colspan="3" class="muted">Nenhum login encontrado.</td>
                 </tr>
               {% endfor %}
             </tbody>

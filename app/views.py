@@ -11,7 +11,7 @@ def home_view(request):
     logins = (
         Logins.objects.select_related("type")
         .all()
-        .order_by("service")
+        .order_by("type__title", "service")
     )
 
     if q:
@@ -22,4 +22,17 @@ def home_view(request):
             | Q(notes__icontains=q)
         )
 
-    return render(request, "index.html", {"logins": logins, "q": q})
+    groups_map = {}
+    for item in logins:
+        title = item.type.title if item.type else "• • •"
+        groups_map.setdefault(title, []).append(item)
+
+    groups = [{"title": title, "items": items} for title, items in sorted(groups_map.items(), key=lambda x: x[0].lower())]
+
+    total_count = sum(len(g["items"]) for g in groups)
+
+    return render(
+        request,
+        "index.html",
+        {"groups": groups, "q": q, "total_count": total_count},
+    )
