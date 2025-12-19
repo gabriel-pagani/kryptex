@@ -16,11 +16,13 @@
         <h1 class="brand">Kryptex</h1>
       </div>
 
-      <div class="topbar__right">
-        <a class="btn" href="/admin/" target="_self" title="Acessar Portal de Administração">
-          <i class="fa-solid fa-gear"></i>
-        </a>
-      </div>
+      {% if user.is_superuser %}
+        <div class="topbar__right">
+          <a class="btn" href="/admin/" target="_self" title="Acessar Portal de Administração">
+            <i class="fa-solid fa-gear"></i>
+          </a>
+        </div>
+      {% endif %}
     </header>
 
     <main class="container">
