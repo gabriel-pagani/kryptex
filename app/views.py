@@ -41,7 +41,7 @@ def home_view(request):
 
 @user_passes_test(lambda u: u.is_active and u.is_staff)
 def get_password_api(request, login_id):
-    if request.method != "GET":
+    if request.method != "POST":
         return HttpResponseForbidden()
     
     login_item = get_object_or_404(Logins, pk=login_id)
