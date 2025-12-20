@@ -124,6 +124,19 @@
 
     const ok = await copyText(password);
     setTempIcon(btn, ok);
+
+    if (ok) {
+      setTimeout(async () => {
+        try {
+          const currentText = await navigator.clipboard.readText();
+          if (currentText === password) {
+            await navigator.clipboard.writeText("");
+          }
+        } catch (e) {
+          navigator.clipboard.writeText("").catch(() => {}); 
+        }
+      }, 30000); // 30s
+    }
   }
 
   function syncFolderUI(folderRow) {
