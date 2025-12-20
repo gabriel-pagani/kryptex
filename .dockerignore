@@ -92,6 +92,7 @@ venv/
 ENV/
 env.bak/
 venv.bak/
+.env.example
 
 # mkdocs documentation
 /site
@@ -121,3 +122,5 @@ node_modules/
 *.pem
 certs/
 Makefile
+LICENSE
+README.md
