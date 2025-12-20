@@ -9,22 +9,18 @@ git clone https://github.com/gabriel-pagani/kryptex.git && cd kryptex/
 ```
 
 #### 2. Configure as variáveis de ambiente:
-Crie um arquivo local_settings.py na pasta [project](https://github.com/gabriel-pagani/kryptex/tree/main/project) (baseado no [local_settings.example.py](https://github.com/gabriel-pagani/kryptex/blob/main/project/local_settings.example.py)) e configure as credenciais.
+Crie um arquivo .env na raiz do projeto (baseado no [.env.example](https://github.com/gabriel-pagani/kryptex/blob/main/.env.example)) e configure as credenciais.
 ```
-cp --update=none local_settings.example.py local_settings.py
+cp --update=none .env.example .env
 ```
 
 ```bash
-# Conteúdo do local_settings.py após a cópia
-SECRET_KEY = 'CHANGE-ME'
-
-DEBUG = False
-
-ALLOWED_HOSTS = ['localhost',]
-
-CSRF_TRUSTED_ORIGINS = ['https://localhost',]
-
-ENCRYPTION_KEY = 'CHANGE-ME'
+# Conteúdo do .env após a cópia
+SECRET_KEY="CHANGE-ME"
+DEBUG="0"
+ALLOWED_HOSTS="localhost"
+CSRF_TRUSTED_ORIGINS="https://localhost"
+ENCRYPTION_KEY="CHANGE-ME"
 ```
 Comando para gerar uma ENCRYPTION_KEY válida.
 ```
