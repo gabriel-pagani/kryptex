@@ -18,16 +18,11 @@ cp --update=none local_settings.example.py local_settings.py
 # Conteúdo do local_settings.py após a cópia
 SECRET_KEY = 'CHANGE-ME'
 
-DEBUG = True
+DEBUG = False
 
-ALLOWED_HOSTS = [
-    '127.0.0.1',
-]
+ALLOWED_HOSTS = ['localhost',]
 
-CSRF_TRUSTED_ORIGINS = [
-    'https://127.0.0.1:8000',
-    'http://127.0.0.1:8000',
-]
+CSRF_TRUSTED_ORIGINS = ['https://localhost',]
 
 ENCRYPTION_KEY = 'CHANGE-ME'
 ```
