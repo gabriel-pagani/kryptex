@@ -11,9 +11,9 @@ services:
       - "127.0.0.1:443:8000"
     volumes:
       - .:/app
+      - ./certs:/certs:ro
     command: >
-      sh -c "openssl req -x509 -newkey rsa:4096 -keyout key.pem -out cert.pem -days 365 -nodes -subj '/CN=localhost' 2>/dev/null &&
-             python manage.py migrate && 
+      sh -c "python manage.py migrate && 
              python manage.py collectstatic --noinput && 
-             gunicorn project.wsgi:application --bind 0.0.0.0:8000 --certfile=cert.pem --keyfile=key.pem"
+             gunicorn project.wsgi:application --bind 0.0.0.0:8000 --certfile=/certs/cert.pem --keyfile=/certs/key.pem"
     restart: unless-stopped
