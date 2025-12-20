@@ -135,7 +135,7 @@
         } catch (e) {
           navigator.clipboard.writeText("").catch(() => {}); 
         }
-      }, 30000); // 30s
+      }, 15000); // 15s
     }
   }
 
