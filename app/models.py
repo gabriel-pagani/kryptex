@@ -1,5 +1,5 @@
 from django.db import models
-from .crypto import encrypt_text, decrypt_text
+from .utils.crypto import encrypt_text, decrypt_text
 import string
 import secrets
 
