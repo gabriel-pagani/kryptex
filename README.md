@@ -28,9 +28,9 @@ python -c "from cryptography.fernet import Fernet; print(Fernet.generate_key().d
 ```
 
 #### 3. Build e Start inicial:
-Execute o comando mkcert para gerar certificados seguros.
+Execute o comando abaixo para gerar certificados seguros.
 ```
-mkdir certs && cd certs && mkcert -key-file key.pem -cert-file cert.pem localhost 127.0.0.1 && cd ..
+make generate-certs
 ```
 
 Execute o comando de build para buildar e subir o container.
