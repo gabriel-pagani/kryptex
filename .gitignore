@@ -214,3 +214,4 @@ __marimo__/
 *.crt
 *.key
 *.pem
+certs/
