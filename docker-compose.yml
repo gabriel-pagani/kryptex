@@ -10,7 +10,7 @@ services:
     ports:
       - "127.0.0.1:443:8000"
     volumes:
-      - .:/app
+      - ./database:/app/database
       - ./certs:/certs:ro
     env_file:
       - .env
