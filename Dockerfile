@@ -22,12 +22,12 @@ RUN apt-get update && apt-get install -y libsasl2-2 libldap-2.5-0 openssl --no-i
 
 COPY --from=builder /install /usr/local
 
-# RUN useradd -m appuser
+RUN useradd -m appuser
 
 COPY . .
 
-# RUN chown -R appuser:appuser /app
+RUN chown -R appuser:appuser /app
 
-# USER appuser
+USER appuser
 
 EXPOSE 8000
