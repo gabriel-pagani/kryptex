@@ -7,15 +7,15 @@ from pathlib import Path
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-SECRET_KEY = None
+SECRET_KEY = os.getenv('SECRET_KEY', 'insecure-key')
 
-DEBUG = None
+DEBUG = os.getenv('DEBUG', '1') == '1'
 
-ALLOWED_HOSTS = None
+ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', 'localhost').split(',')
 
-CSRF_TRUSTED_ORIGINS = None
+CSRF_TRUSTED_ORIGINS = os.getenv('CSRF_TRUSTED_ORIGINS', 'https://localhost').split(',')
 
-ENCRYPTION_KEY = None
+ENCRYPTION_KEY = os.getenv('ENCRYPTION_KEY', 'insecure-key')
 
 INSTALLED_APPS = [
     'django.contrib.admin',
@@ -122,8 +122,3 @@ SECURE_SSL_REDIRECT = True
 SESSION_COOKIE_SECURE = True
 
 CSRF_COOKIE_SECURE = True
-
-try:
-    from project.local_settings import *
-except ImportError:
-    ...
