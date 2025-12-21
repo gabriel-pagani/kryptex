@@ -1,6 +1,7 @@
 (function () {
   const FOLDER_STATE_KEY = "kryptex.folderState.v1";
-  const SALT = "KRYPTEX_STATIC_SALT_V1"; 
+  const SESSION_KEY_STORAGE = "kryptex.masterKey.session";
+  const SALT = "ZPmKehawtxloom5ZYih4FPvVCavdtePoYybWk_7U2nM=";
   const PBKDF2_ITERATIONS = 100000;
 
   let masterKeyCache = null;
@@ -16,6 +17,30 @@
       { name: "PBKDF2", salt: enc.encode(SALT), iterations: PBKDF2_ITERATIONS, hash: "SHA-256" },
       keyMaterial, { name: "AES-GCM", length: 256 }, false, ["encrypt", "decrypt"]
     );
+  }
+
+  // Exporta a chave para JSON (JWK) para poder salvar no SessionStorage
+  async function exportAndSaveKey(key) {
+    try {
+      const exported = await window.crypto.subtle.exportKey("jwk", key);
+      sessionStorage.setItem(SESSION_KEY_STORAGE, JSON.stringify(exported));
+    } catch (e) {
+      console.error("Erro ao salvar chave na sessão", e);
+    }
+  }
+
+  // Tenta recuperar e importar a chave do SessionStorage
+  async function loadKeyFromSession() {
+    const raw = sessionStorage.getItem(SESSION_KEY_STORAGE);
+    if (!raw) return null;
+    try {
+      const jwk = JSON.parse(raw);
+      return await window.crypto.subtle.importKey(
+        "jwk", jwk, { name: "AES-GCM" }, false, ["encrypt", "decrypt"]
+      );
+    } catch (e) {
+      return null;
+    }
   }
 
   async function encryptData(plainText, key) {
@@ -47,15 +72,59 @@
     }
   }
 
-  async function requestMasterPassword() {
-    if (masterKeyCache) return masterKeyCache;
-    const password = prompt("🔐 Digite Sua Chave Mestra:");
-    if (!password) return null;
-    
-    // Pequena validação para evitar salvar chave vazia
-    if (password.trim().length === 0) return null;
+  // --- UI: MODAL DE SENHA MESTRA ---
 
-    masterKeyCache = await getMasterKey(password);
+  function askPasswordViaModal() {
+    return new Promise((resolve) => {
+      const modal = document.getElementById("masterPasswordModal");
+      const form = document.getElementById("masterPasswordForm");
+      const input = document.getElementById("masterPassInput");
+
+      // Limpa input anterior
+      input.value = "";
+      
+      // Exibe Modal
+      modal.showModal();
+
+      // Handler único para o submit
+      const submitHandler = (e) => {
+        e.preventDefault();
+        const pwd = input.value;
+        modal.close();
+        form.removeEventListener("submit", submitHandler); // Limpa listener
+        resolve(pwd); // Retorna a senha
+      };
+
+      form.addEventListener("submit", submitHandler);
+
+      // Se o usuário apertar ESC, resolve como null
+      modal.addEventListener("close", () => {
+        if (input.value === "") resolve(null);
+      }, { once: true });
+    });
+  }
+
+  async function requestMasterPassword() {
+    // 1. Tenta memória RAM
+    if (masterKeyCache) return masterKeyCache;
+
+    // 2. Tenta recuperar da Sessão (F5 / Reload)
+    const sessionKey = await loadKeyFromSession();
+    if (sessionKey) {
+      masterKeyCache = sessionKey;
+      return masterKeyCache;
+    }
+
+    // 3. Se não tiver, abre o Modal Personalizado
+    const password = await askPasswordViaModal();
+    
+    if (!password || password.trim().length === 0) return null;
+
+    // 4. Gera a chave e salva na sessão
+    const key = await getMasterKey(password);
+    await exportAndSaveKey(key);
+    
+    masterKeyCache = key;
     return masterKeyCache;
   }
 
@@ -100,7 +169,7 @@
     btn.dataset.restoreTimerId = String(id);
   }
 
-  // --- ACTIONS (View / Create) ---
+  // --- ACTIONS ---
 
   async function fetchEncryptedData(id) {
     const resp = await fetch(`/api/password/${id}/`, {
@@ -124,7 +193,7 @@
       toggleBtn.innerHTML = '<i class="fa-regular fa-eye"></i>';
     } else {
       const key = await requestMasterPassword();
-      if (!key) return;
+      if (!key) return; // Usuário cancelou ou errou
 
       toggleBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i>';
       
@@ -137,8 +206,13 @@
           toggleBtn.setAttribute("aria-pressed", "true");
           toggleBtn.innerHTML = '<i class="fa-regular fa-eye-slash"></i>';
         } else {
-          alert("Falha ao descriptografar. A senha mestra está correta?");
-          masterKeyCache = null; // Reseta para tentar novamente
+          // Se a descriptografia falhar, provavelmente a senha mestra salva na sessão está errada/antiga
+          // Opcional: Limpar sessão para forçar nova tentativa
+          if(confirm("Falha ao descriptografar. Deseja redefinir a senha mestra desta sessão?")) {
+             sessionStorage.removeItem(SESSION_KEY_STORAGE);
+             masterKeyCache = null;
+             window.location.reload();
+          }
           toggleBtn.innerHTML = '<i class="fa-regular fa-eye"></i>';
         }
       } catch (e) {
@@ -166,7 +240,6 @@
          btn.innerHTML = '<i class="fa-regular fa-copy"></i>';
        } catch {
          setTempIcon(btn, false);
-         masterKeyCache = null;
          btn.innerHTML = '<i class="fa-regular fa-copy"></i>';
          return;
        }
@@ -179,24 +252,24 @@
     }
   }
 
-  // --- MODAL LOGIC ---
+  // --- MODAL CADASTRO (Lógica existente) ---
 
-  const modal = document.getElementById("addLoginModal");
-  const form = document.getElementById("addLoginForm");
+  const addModal = document.getElementById("addLoginModal");
+  const addForm = document.getElementById("addLoginForm");
 
-  function setupModal() {
-    if (!modal) return;
+  function setupAddModal() {
+    if (!addModal) return;
     
     const openBtn = document.querySelector(".js-open-modal");
-    if(openBtn) openBtn.addEventListener("click", () => modal.showModal());
+    if(openBtn) openBtn.addEventListener("click", () => addModal.showModal());
 
     document.querySelectorAll(".js-close-modal").forEach(btn => {
-      btn.addEventListener("click", () => modal.close());
+      btn.addEventListener("click", () => addModal.close());
     });
 
-    form.addEventListener("submit", async (e) => {
+    addForm.addEventListener("submit", async (e) => {
       e.preventDefault();
-      const submitBtn = form.querySelector("button[type='submit']");
+      const submitBtn = addForm.querySelector("button[type='submit']");
       const originalText = submitBtn.innerText;
       
       const key = await requestMasterPassword();
@@ -206,7 +279,7 @@
       submitBtn.innerText = "Criptografando...";
 
       try {
-        const formData = new FormData(form);
+        const formData = new FormData(addForm);
         const encryptedPass = await encryptData(formData.get("password"), key);
 
         const payload = {
@@ -241,8 +314,8 @@
     });
   }
 
-  // --- FOLDER LOGIC (Mantinada igual) ---
-  
+  // --- FOLDER LOGIC ---
+
   function loadFolderState() {
     try { return JSON.parse(localStorage.getItem(FOLDER_STATE_KEY) || "{}"); } catch { return {}; }
   }
@@ -253,7 +326,7 @@
     folderRow.setAttribute("aria-expanded", String(!!expanded));
     const group = folderRow.dataset.group;
     if (group == null) return;
-    
+
     const icon = folderRow.querySelector(".folderRow__icon");
     if (icon) icon.innerHTML = expanded ? '<i class="fa-solid fa-chevron-down"></i>' : '<i class="fa-solid fa-chevron-right"></i>';
     
@@ -286,7 +359,7 @@
     });
   }
 
-  setupModal();
+  setupAddModal();
 
   document.addEventListener("click", async (ev) => {
     if (ev.target.closest(".js-folder")) {
