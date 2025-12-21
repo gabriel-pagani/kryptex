@@ -1,7 +1,7 @@
 (function () {
   const FOLDER_STATE_KEY = "kryptex.folderState.v1";
   const SESSION_KEY_STORAGE = "kryptex.masterKey.session";
-  const SALT = "ZPmKehawtxloom5ZYih4FPvVCavdtePoYybWk_7U2nM=";
+  const SALT = "KRYPTEX_STATIC_SALT_V1";
   const PBKDF2_ITERATIONS = 100000;
 
   let masterKeyCache = null;
@@ -15,7 +15,7 @@
     );
     return window.crypto.subtle.deriveKey(
       { name: "PBKDF2", salt: enc.encode(SALT), iterations: PBKDF2_ITERATIONS, hash: "SHA-256" },
-      keyMaterial, { name: "AES-GCM", length: 256 }, false, ["encrypt", "decrypt"]
+      keyMaterial, { name: "AES-GCM", length: 256 }, true, ["encrypt", "decrypt"]
     );
   }
 
@@ -25,7 +25,7 @@
       const exported = await window.crypto.subtle.exportKey("jwk", key);
       sessionStorage.setItem(SESSION_KEY_STORAGE, JSON.stringify(exported));
     } catch (e) {
-      console.error("Erro ao salvar chave na sessão", e);
+      console.error("Erro ao salvar chave na sessão:", e);
     }
   }
 
@@ -36,9 +36,10 @@
     try {
       const jwk = JSON.parse(raw);
       return await window.crypto.subtle.importKey(
-        "jwk", jwk, { name: "AES-GCM" }, false, ["encrypt", "decrypt"]
+        "jwk", jwk, { name: "AES-GCM" }, true, ["encrypt", "decrypt"]
       );
     } catch (e) {
+      console.error("Erro ao carregar sessão:", e);
       return null;
     }
   }
@@ -91,36 +92,38 @@
         e.preventDefault();
         const pwd = input.value;
         modal.close();
-        form.removeEventListener("submit", submitHandler); // Limpa listener
-        resolve(pwd); // Retorna a senha
+        form.removeEventListener("submit", submitHandler); // Limpa listener para não duplicar
+        resolve(pwd); // Retorna a senha digitada
       };
 
       form.addEventListener("submit", submitHandler);
 
-      // Se o usuário apertar ESC, resolve como null
-      modal.addEventListener("close", () => {
-        if (input.value === "") resolve(null);
-      }, { once: true });
+      // Se o usuário cancelar (ESC), resolve como null
+      const closeHandler = () => {
+         if (modal.returnValue === 'close') resolve(null); // Só se não foi pelo submit
+         form.removeEventListener("submit", submitHandler);
+      };
+      modal.addEventListener("close", closeHandler, { once: true });
     });
   }
 
   async function requestMasterPassword() {
-    // 1. Tenta memória RAM
+    // 1. Verifica se já está na memória RAM (uso imediato)
     if (masterKeyCache) return masterKeyCache;
 
-    // 2. Tenta recuperar da Sessão (F5 / Reload)
+    // 2. Tenta recuperar da Sessão (F5 / Navegação / Admin)
     const sessionKey = await loadKeyFromSession();
     if (sessionKey) {
       masterKeyCache = sessionKey;
       return masterKeyCache;
     }
 
-    // 3. Se não tiver, abre o Modal Personalizado
+    // 3. Se não tiver em lugar nenhum, abre o Modal e pede a senha
     const password = await askPasswordViaModal();
     
     if (!password || password.trim().length === 0) return null;
 
-    // 4. Gera a chave e salva na sessão
+    // 4. Gera a chave e SALVA na sessão
     const key = await getMasterKey(password);
     await exportAndSaveKey(key);
     
@@ -193,7 +196,7 @@
       toggleBtn.innerHTML = '<i class="fa-regular fa-eye"></i>';
     } else {
       const key = await requestMasterPassword();
-      if (!key) return; // Usuário cancelou ou errou
+      if (!key) return; 
 
       toggleBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i>';
       
@@ -206,13 +209,12 @@
           toggleBtn.setAttribute("aria-pressed", "true");
           toggleBtn.innerHTML = '<i class="fa-regular fa-eye-slash"></i>';
         } else {
-          // Se a descriptografia falhar, provavelmente a senha mestra salva na sessão está errada/antiga
-          // Opcional: Limpar sessão para forçar nova tentativa
-          if(confirm("Falha ao descriptografar. Deseja redefinir a senha mestra desta sessão?")) {
-             sessionStorage.removeItem(SESSION_KEY_STORAGE);
-             masterKeyCache = null;
-             window.location.reload();
-          }
+          // Se falhar a descriptografia, pode ser que a chave salva na sessão esteja errada/antiga.
+          // Limpamos para pedir de novo.
+          sessionStorage.removeItem(SESSION_KEY_STORAGE);
+          masterKeyCache = null;
+          alert("Falha na descriptografia. A chave salva será redefinida.");
+          
           toggleBtn.innerHTML = '<i class="fa-regular fa-eye"></i>';
         }
       } catch (e) {
@@ -252,7 +254,7 @@
     }
   }
 
-  // --- MODAL CADASTRO (Lógica existente) ---
+  // --- MODAL CADASTRO ---
 
   const addModal = document.getElementById("addLoginModal");
   const addForm = document.getElementById("addLoginForm");
@@ -315,30 +317,21 @@
   }
 
   // --- FOLDER LOGIC ---
-
-  function loadFolderState() {
-    try { return JSON.parse(localStorage.getItem(FOLDER_STATE_KEY) || "{}"); } catch { return {}; }
-  }
-  function saveFolderState(state) {
-    try { localStorage.setItem(FOLDER_STATE_KEY, JSON.stringify(state || {})); } catch {}
-  }
+  function loadFolderState() { try { return JSON.parse(localStorage.getItem(FOLDER_STATE_KEY) || "{}"); } catch { return {}; } }
+  function saveFolderState(state) { try { localStorage.setItem(FOLDER_STATE_KEY, JSON.stringify(state || {})); } catch {} }
   function setExpanded(folderRow, expanded) {
     folderRow.setAttribute("aria-expanded", String(!!expanded));
     const group = folderRow.dataset.group;
     if (group == null) return;
-
     const icon = folderRow.querySelector(".folderRow__icon");
     if (icon) icon.innerHTML = expanded ? '<i class="fa-solid fa-chevron-down"></i>' : '<i class="fa-solid fa-chevron-right"></i>';
-    
-    document.querySelectorAll(`.js-login-row[data-group="${group}"]`)
-      .forEach((tr) => tr.classList.toggle("is-hidden", !expanded));
+    document.querySelectorAll(`.js-login-row[data-group="${group}"]`).forEach((tr) => tr.classList.toggle("is-hidden", !expanded));
   }
   function toggleFolder(folderRow) {
     const group = folderRow.dataset.group;
     const expanded = folderRow.getAttribute("aria-expanded") === "true";
     const next = !expanded;
     setExpanded(folderRow, next);
-    
     if (!new URLSearchParams(window.location.search).get("q")) {
         const state = loadFolderState();
         state[group] = next;
