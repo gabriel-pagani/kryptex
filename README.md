@@ -20,11 +20,6 @@ SECRET_KEY="CHANGE-ME"
 DEBUG="0"
 ALLOWED_HOSTS="localhost"
 CSRF_TRUSTED_ORIGINS="https://localhost"
-ENCRYPTION_KEY="CHANGE-ME"
-```
-Comando para gerar uma ENCRYPTION_KEY válida.
-```
-python -c "from cryptography.fernet import Fernet; print(Fernet.generate_key().decode())"
 ```
 
 #### 3. Build e Start inicial:
