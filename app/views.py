@@ -1,8 +1,10 @@
+import json
 from django.shortcuts import render, get_object_or_404
 from django.contrib.auth.decorators import user_passes_test
-from django.http import JsonResponse, HttpResponseForbidden
+from django.http import JsonResponse, HttpResponseForbidden, HttpResponseBadRequest
+from django.views.decorators.http import require_POST
 from django.db.models import Q
-from .models import Logins
+from .models import Logins, LoginTypes
 
 
 @user_passes_test(lambda u: u.is_active and u.is_staff, login_url="/admin/login/")
@@ -26,23 +28,49 @@ def home_view(request):
 
     groups_map = {}
     for item in logins:
-        title = item.type.title if item.type else "• • •"
+        title = item.type.title if item.type else "Outros"
         groups_map.setdefault(title, []).append(item)
 
     groups = [{"title": title, "items": items} for title, items in sorted(groups_map.items(), key=lambda x: x[0].lower())]
 
     total_count = sum(len(g["items"]) for g in groups)
+    
+    all_types = LoginTypes.objects.all()
 
     return render(
         request,
         "index.html",
-        {"groups": groups, "q": q, "total_count": total_count},
+        {"groups": groups, "q": q, "total_count": total_count, "all_types": all_types},
     )
 
+
+@require_POST
+@user_passes_test(lambda u: u.is_active and u.is_staff)
+def create_login_api(request):
+    try:
+        data = json.loads(request.body)
+        
+        if not all(k in data for k in ("service", "login", "password")):
+            return HttpResponseBadRequest("Dados incompletos")
+
+        login_type = None
+        if data.get("type_id"):
+            login_type = LoginTypes.objects.filter(pk=data["type_id"]).first()
+
+        Logins.objects.create(
+            service=data["service"],
+            login=data["login"],
+            password=data["password"],
+            notes=data.get("notes", ""),
+            type=login_type
+        )
+        return JsonResponse({"status": "ok"})
+    except Exception as e:
+        return JsonResponse({"status": "error", "message": str(e)}, status=500)
+
+
+@require_POST
 @user_passes_test(lambda u: u.is_active and u.is_staff)
 def get_password_api(request, login_id):
-    if request.method != "POST":
-        return HttpResponseForbidden()
-    
     login_item = get_object_or_404(Logins, pk=login_id)
-    return JsonResponse({"password": login_item.decrypted_password})
+    return JsonResponse({"password": login_item.password})

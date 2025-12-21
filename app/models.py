@@ -26,27 +26,6 @@ class Logins(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self._original_password = self.password
-
-    def save(self, *args, **kwargs):
-        if not self.password:
-            alphabet = string.ascii_letters + string.digits + '!@#$%&?-_=+.,:()[]{}'
-            generated_password = ''.join(secrets.choice(alphabet) for _ in range(50))
-            self.password = generated_password
-
-        if self.pk is None or self.password != self._original_password:
-            if self.password:
-                self.password = encrypt_text(self.password)
-        
-        super().save(*args, **kwargs)
-        self._original_password = self.password
-
-    @property
-    def decrypted_password(self):
-        return decrypt_text(self.password)
-
     def __str__(self):
         return self.service
 

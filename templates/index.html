@@ -16,13 +16,17 @@
         <h1 class="brand">Kryptex</h1>
       </div>
 
-      {% if user.is_superuser %}
-        <div class="topbar__right">
-          <a class="btn" href="/admin/" target="_self" title="Acessar Portal de Administração">
+      <div class="topbar__right">
+        <button class="btn btn--primary js-open-modal" type="button" style="margin-right: 8px;" title="Cadastrar um Novo Login">
+          <i class="fa-solid fa-plus"></i>
+        </button>
+
+        {% if user.is_superuser %}
+          <a class="btn" href="/admin/" target="_self" title="Acessar o Portal de Administração">
             <i class="fa-solid fa-gear"></i>
           </a>
-        </div>
-      {% endif %}
+        {% endif %}
+      </div>
     </header>
 
     <main class="container">
@@ -119,6 +123,51 @@
       </section>
     </main>
 
+    <dialog class="modal" id="addLoginModal">
+      <div class="modal__content">
+        <div class="modal__header">
+          <h3>Novo Login</h3>
+          <button class="btn btn--tiny js-close-modal"><i class="fa-solid fa-xmark"></i></button>
+        </div>
+        
+        <form id="addLoginForm" class="form">
+          <div class="form__group">
+            <label>Serviço</label>
+            <input type="text" name="service" required autocomplete="off">
+          </div>
+    
+          <div class="form__group">
+            <label>Categoria</label>
+            <select name="type_id">
+                <option value="">------------</option>
+                {% for t in all_types %}
+                    <option value="{{ t.id }}">{{ t.title }}</option>
+                {% endfor %}
+            </select>
+          </div>
+    
+          <div class="form__group">
+            <label>Login / Email</label>
+            <input type="text" name="login" required autocomplete="off">
+          </div>
+    
+          <div class="form__group">
+            <label>Senha</label>
+            <input type="password" name="password" required autocomplete="new-password">
+          </div>
+    
+          <div class="form__group">
+            <label>Notas</label>
+            <textarea name="notes" rows="3"></textarea>
+          </div>
+    
+          <div class="modal__actions">
+            <button type="button" class="btn js-close-modal">Cancelar</button>
+            <button type="submit" class="btn btn--primary">Salvar</button>
+          </div>
+        </form>
+      </div>
+    </dialog>
     <script src="{% static 'js/index.js' %}"></script>
   </body>
 </html>
