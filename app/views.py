@@ -28,7 +28,7 @@ def home_view(request):
 
     groups_map = {}
     for item in logins:
-        title = item.type.title if item.type else "Outros"
+        title = item.type.title if item.type else "• • •"
         groups_map.setdefault(title, []).append(item)
 
     groups = [{"title": title, "items": items} for title, items in sorted(groups_map.items(), key=lambda x: x[0].lower())]
