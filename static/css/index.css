@@ -277,6 +277,14 @@ body::-webkit-scrollbar {
   margin-bottom: 20px;
 }
 
+.modal__header--center {
+  justify-content: center;
+}
+
+.modal__header--center h3 {
+  text-align: center;
+}
+
 .modal__header h3 {
   font-size: 1.25rem;
   font-weight: 600;
