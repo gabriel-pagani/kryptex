@@ -263,7 +263,15 @@
     if (!addModal) return;
     
     const openBtn = document.querySelector(".js-open-modal");
-    if(openBtn) openBtn.addEventListener("click", () => addModal.showModal());
+    
+    if(openBtn) {
+        openBtn.addEventListener("click", async () => {
+            const key = await requestMasterPassword();
+            if (!key) return;
+
+            addModal.showModal();
+        });
+    }
 
     document.querySelectorAll(".js-close-modal").forEach(btn => {
       btn.addEventListener("click", () => addModal.close());
