@@ -316,6 +316,169 @@
     });
   }
 
+  // --- MODAL DE EDIÇÃO ---
+
+  const editModal = document.getElementById("editLoginModal");
+  const editForm = document.getElementById("editLoginForm");
+
+  function setupEditModal() {
+    if (!editModal) return;
+
+    // Fechar modal
+    editModal.querySelectorAll(".js-close-modal").forEach(btn => {
+      btn.addEventListener("click", () => editModal.close());
+    });
+    
+    // Toggle de visibilidade da senha dentro do modal
+    const toggleVisBtn = editForm.querySelector(".js-toggle-pass-visibility");
+    if(toggleVisBtn) {
+        toggleVisBtn.addEventListener("click", () => {
+            const input = editForm.querySelector("input[name='password']");
+            if(input.type === "password") {
+                input.type = "text";
+                toggleVisBtn.innerHTML = '<i class="fa-regular fa-eye-slash"></i>';
+            } else {
+                input.type = "password";
+                toggleVisBtn.innerHTML = '<i class="fa-regular fa-eye"></i>';
+            }
+        });
+    }
+
+    // --- LÓGICA DE EXCLUSÃO (NOVO) ---
+    const deleteBtn = editForm.querySelector(".js-delete-login");
+    if (deleteBtn) {
+        deleteBtn.addEventListener("click", async () => {
+            const loginId = editForm.querySelector("[name='login_id']").value;
+            if (!loginId) return;
+
+            // Confirmação simples do navegador
+            if (!confirm("Tem certeza que deseja EXCLUIR este login? Esta ação não pode ser desfeita.")) {
+                return;
+            }
+
+            const originalText = deleteBtn.innerHTML;
+            deleteBtn.disabled = true;
+            deleteBtn.innerText = "Excluindo...";
+
+            try {
+                const resp = await fetch(`/api/login/${loginId}/delete/`, {
+                    method: "POST",
+                    headers: {
+                        "X-CSRFToken": getCookie("csrftoken"),
+                    },
+                });
+
+                if (resp.ok) {
+                    window.location.reload(); // Recarrega para sumir da lista
+                } else {
+                    alert("Erro ao excluir login.");
+                    deleteBtn.disabled = false;
+                    deleteBtn.innerHTML = originalText;
+                }
+            } catch (e) {
+                console.error(e);
+                alert("Erro de conexão.");
+                deleteBtn.disabled = false;
+                deleteBtn.innerHTML = originalText;
+            }
+        });
+    }
+  
+    // Submit do Formulário de Edição
+    editForm.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const submitBtn = editForm.querySelector("button[type='submit']");
+      const originalText = submitBtn.innerText;
+      
+      const key = await requestMasterPassword();
+      if (!key) return;
+
+      submitBtn.disabled = true;
+      submitBtn.innerText = "Salvando...";
+
+      try {
+        const formData = new FormData(editForm);
+        const loginId = formData.get("login_id");
+        
+        // Criptografar a senha (seja a antiga descriptografada ou uma nova digitada)
+        const encryptedPass = await encryptData(formData.get("password"), key);
+
+        const payload = {
+            service: formData.get("service"),
+            type_id: formData.get("type_id"),
+            login: formData.get("login"),
+            password: encryptedPass,
+            notes: formData.get("notes")
+        };
+
+        const resp = await fetch(`/api/login/${loginId}/update/`, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "X-CSRFToken": getCookie("csrftoken"),
+            },
+            body: JSON.stringify(payload)
+        });
+
+        if (resp.ok) {
+            window.location.reload();
+        } else {
+            alert("Erro ao atualizar login.");
+        }
+      } catch (err) {
+        console.error(err);
+        alert("Erro ao processar atualização.");
+      } finally {
+        submitBtn.disabled = false;
+        submitBtn.innerText = originalText;
+      }
+    });
+  }
+
+  // Função chamada ao clicar no botão de lápis
+  async function openEditLogin(btn) {
+    const wrap = btn.closest(".cellActions");
+    const id = wrap.dataset.id; // Pega o ID da linha
+
+    // 1. Solicita a chave mestra antes de tudo
+    const key = await requestMasterPassword();
+    if (!key) return;
+
+    btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i>';
+
+    try {
+        // 2. Busca os dados completos no backend
+        const resp = await fetch(`/api/login/${id}/details/`);
+        if (!resp.ok) throw new Error("Erro ao buscar dados");
+        const data = await resp.json();
+
+        // 3. Descriptografa a senha para preencher o formulário
+        const plainPassword = await decryptData(data.password, key);
+        if (plainPassword === null) {
+            alert("Erro: Não foi possível descriptografar a senha com a chave atual.");
+            btn.innerHTML = '<i class="fa-regular fa-pen-to-square"></i>';
+            return;
+        }
+
+        // 4. Preenche o formulário
+        editForm.querySelector("[name='login_id']").value = data.id;
+        editForm.querySelector("[name='service']").value = data.service;
+        editForm.querySelector("[name='login']").value = data.login;
+        editForm.querySelector("[name='type_id']").value = data.type_id;
+        editForm.querySelector("[name='notes']").value = data.notes;
+        editForm.querySelector("[name='password']").value = plainPassword;
+
+        // 5. Abre o modal
+        editModal.showModal();
+
+    } catch (e) {
+        console.error(e);
+        alert("Erro ao carregar dados do login.");
+    } finally {
+        btn.innerHTML = '<i class="fa-regular fa-pen-to-square"></i>';
+    }
+  }
+
   // --- FOLDER LOGIC ---
   function loadFolderState() { try { return JSON.parse(localStorage.getItem(FOLDER_STATE_KEY) || "{}"); } catch { return {}; } }
   function saveFolderState(state) { try { localStorage.setItem(FOLDER_STATE_KEY, JSON.stringify(state || {})); } catch {} }
@@ -353,12 +516,14 @@
   }
 
   setupAddModal();
+  setupEditModal();
 
   document.addEventListener("click", async (ev) => {
     if (ev.target.closest(".js-folder")) {
         toggleFolder(ev.target.closest(".js-folder"));
         return;
     }
+
     const toggleBtn = ev.target.closest(".js-toggle-secret");
     if (toggleBtn) { toggleSecret(toggleBtn); return; }
     
@@ -371,6 +536,12 @@
     
     const copyPassBtn = ev.target.closest(".js-copy-password");
     if (copyPassBtn) { copyPasswordHandler(copyPassBtn); return; }
+
+    const editBtn = ev.target.closest(".js-edit-login");
+    if (editBtn) {
+        openEditLogin(editBtn);
+        return;
+    }
   });
 
 })();
