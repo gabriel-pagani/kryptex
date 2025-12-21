@@ -100,7 +100,7 @@
                           <i class="fa-regular fa-eye"></i>
                         </button>
 
-                        <button class="btn btn--tiny" type="button" aria-pressed="false" title="Editar Login">
+                        <button class="btn btn--tiny js-edit-login" type="button" title="Editar Login">
                           <i class="fa-regular fa-pen-to-square"></i>
                         </button>                        
                       </div>
@@ -178,6 +178,67 @@
     
           <div class="modal__actions">
             <button type="submit" class="btn btn--primary" style="width: 100%">Desbloquear</button>
+          </div>
+        </form>
+      </div>
+    </dialog>
+
+    <dialog class="modal" id="editLoginModal">
+      <div class="modal__content">
+        <div class="modal__header">
+          <h3>Editar Login</h3>
+          <button class="btn btn--tiny js-close-modal"><i class="fa-solid fa-xmark"></i></button>
+        </div>
+        
+        <form id="editLoginForm" class="form">
+          <input type="hidden" name="login_id"> <div class="form__group">
+            <label>Serviço</label>
+            <input type="text" name="service" required autocomplete="off">
+          </div>
+    
+          <div class="form__group">
+            <label>Categoria</label>
+            <select name="type_id">
+                <option value="">------------</option>
+                {% for t in all_types %}
+                    <option value="{{ t.id }}">{{ t.title }}</option>
+                {% endfor %}
+            </select>
+          </div>
+    
+          <div class="form__group">
+            <label>Login</label>
+            <input type="text" name="login" required autocomplete="off">
+          </div>
+    
+          <div class="form__group">
+            <label>Senha</label>
+            <div style="position: relative;">
+                <input type="password" name="password" required autocomplete="new-password">
+                <button type="button" class="btn btn--tiny js-toggle-pass-visibility" 
+                        style="position: absolute; right: 8px; top: 8px;" tabindex="-1">
+                    <i class="fa-regular fa-eye"></i>
+                </button>
+            </div>
+            <small class="muted" style="font-size: 0.75rem; margin-top: 4px; display: block;">
+                Edite apenas se quiser alterar a senha.
+            </small>
+          </div>
+    
+          <div class="form__group">
+            <label>Notas</label>
+            <textarea name="notes" rows="3"></textarea>
+          </div>
+    
+          <div class="modal__actions" style="justify-content: space-between;">
+            <button type="button" class="btn btn--danger js-delete-login" style="background-color: #ef4444; border-color: #ef4444; color: white;">
+                Excluir
+            </button>
+
+            <div style="display: flex; gap: 12px;">
+                <button type="button" class="btn js-close-modal">Cancelar</button>
+                <button type="submit" class="btn btn--primary">Salvar</button>
+            </div>
           </div>
         </form>
       </div>

@@ -44,6 +44,19 @@ def home_view(request):
     )
 
 
+@user_passes_test(lambda u: u.is_active and u.is_staff)
+def get_login_details_api(request, login_id):
+    login_item = get_object_or_404(Logins, pk=login_id)
+    return JsonResponse({
+        "id": login_item.id,
+        "service": login_item.service,
+        "login": login_item.login,
+        "password": login_item.password, # Retorna o blob cifrado
+        "notes": login_item.notes,
+        "type_id": login_item.type.id if login_item.type else ""
+    })
+
+
 @require_POST
 @user_passes_test(lambda u: u.is_active and u.is_staff)
 def create_login_api(request):
@@ -64,6 +77,47 @@ def create_login_api(request):
             notes=data.get("notes", ""),
             type=login_type
         )
+        return JsonResponse({"status": "ok"})
+    except Exception as e:
+        return JsonResponse({"status": "error", "message": str(e)}, status=500)
+
+
+@require_POST
+@user_passes_test(lambda u: u.is_active and u.is_staff)
+def update_login_api(request, login_id):
+    login_item = get_object_or_404(Logins, pk=login_id)
+    
+    try:
+        data = json.loads(request.body)
+        
+        # Atualiza campos básicos
+        login_item.service = data.get("service", login_item.service)
+        login_item.login = data.get("login", login_item.login)
+        login_item.notes = data.get("notes", "")
+        
+        # Atualiza senha apenas se enviada (já cifrada pelo frontend)
+        if "password" in data and data["password"]:
+            login_item.password = data["password"]
+
+        # Atualiza tipo
+        if "type_id" in data:
+            if data["type_id"]:
+                login_item.type = LoginTypes.objects.filter(pk=data["type_id"]).first()
+            else:
+                login_item.type = None
+
+        login_item.save()
+        return JsonResponse({"status": "ok"})
+    except Exception as e:
+        return JsonResponse({"status": "error", "message": str(e)}, status=500)
+
+
+@require_POST
+@user_passes_test(lambda u: u.is_active and u.is_staff)
+def delete_login_api(request, login_id):
+    login_item = get_object_or_404(Logins, pk=login_id)
+    try:
+        login_item.delete()
         return JsonResponse({"status": "ok"})
     except Exception as e:
         return JsonResponse({"status": "error", "message": str(e)}, status=500)
