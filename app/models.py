@@ -1,7 +1,4 @@
 from django.db import models
-from .utils.crypto import encrypt_text, decrypt_text
-import string
-import secrets
 
 
 class LoginTypes(models.Model):
