@@ -1,42 +1,66 @@
 (function () {
   const FOLDER_STATE_KEY = "kryptex.folderState.v1";
+  const SALT = "KRYPTEX_STATIC_SALT_V1"; 
+  const PBKDF2_ITERATIONS = 100000;
 
-  function isSearchMode() {
-    const q = new URLSearchParams(window.location.search).get("q");
-    return !!(q && q.trim());
+  let masterKeyCache = null;
+
+  // --- CRYPTO CORE ---
+
+  async function getMasterKey(password) {
+    const enc = new TextEncoder();
+    const keyMaterial = await window.crypto.subtle.importKey(
+      "raw", enc.encode(password), { name: "PBKDF2" }, false, ["deriveKey"]
+    );
+    return window.crypto.subtle.deriveKey(
+      { name: "PBKDF2", salt: enc.encode(SALT), iterations: PBKDF2_ITERATIONS, hash: "SHA-256" },
+      keyMaterial, { name: "AES-GCM", length: 256 }, false, ["encrypt", "decrypt"]
+    );
   }
 
-  function loadFolderState() {
+  async function encryptData(plainText, key) {
+    const enc = new TextEncoder();
+    const iv = window.crypto.getRandomValues(new Uint8Array(12));
+    const encrypted = await window.crypto.subtle.encrypt(
+      { name: "AES-GCM", iv: iv }, key, enc.encode(plainText)
+    );
+    
+    return JSON.stringify({
+      iv: btoa(String.fromCharCode(...iv)),
+      data: btoa(String.fromCharCode(...new Uint8Array(encrypted)))
+    });
+  }
+
+  async function decryptData(encryptedJsonStr, key) {
     try {
-      const raw = localStorage.getItem(FOLDER_STATE_KEY);
-      return raw ? JSON.parse(raw) : {};
-    } catch {
-      return {};
+      const dataObj = JSON.parse(encryptedJsonStr);
+      const iv = Uint8Array.from(atob(dataObj.iv), c => c.charCodeAt(0));
+      const ciphertext = Uint8Array.from(atob(dataObj.data), c => c.charCodeAt(0));
+
+      const decryptedBuffer = await window.crypto.subtle.decrypt(
+        { name: "AES-GCM", iv: iv }, key, ciphertext
+      );
+      return new TextDecoder().decode(decryptedBuffer);
+    } catch (e) {
+      console.error(e);
+      return null;
     }
   }
 
-  function saveFolderState(state) {
-    try {
-      localStorage.setItem(FOLDER_STATE_KEY, JSON.stringify(state || {}));
-    } catch {
-      // ignora
-    }
+  async function requestMasterPassword() {
+    if (masterKeyCache) return masterKeyCache;
+    const password = prompt("🔐 Digite Sua Chave Mestra:");
+    if (!password) return null;
+    
+    // Pequena validação para evitar salvar chave vazia
+    if (password.trim().length === 0) return null;
+
+    masterKeyCache = await getMasterKey(password);
+    return masterKeyCache;
   }
 
-  function getFolderRows() {
-    return Array.from(document.querySelectorAll(".js-folder"));
-  }
+  // --- UI HELPERS ---
 
-  function getFolderGroupId(folderRow) {
-    return folderRow.getAttribute("data-group");
-  }
-
-  function setExpanded(folderRow, expanded) {
-    folderRow.setAttribute("aria-expanded", String(!!expanded));
-    syncFolderUI(folderRow);
-  }
-
-  // Função auxiliar para pegar o token CSRF dos cookies do Django
   function getCookie(name) {
     let cookieValue = null;
     if (document.cookie && document.cookie !== '') {
@@ -51,27 +75,7 @@
     }
     return cookieValue;
   }
-
-  async function fetchPassword(id) {
-    try {
-      const resp = await fetch(`/api/password/${id}/`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "X-CSRFToken": getCookie("csrftoken"),
-        },
-      });
-      
-      if (!resp.ok) throw new Error("Erro");
-      const data = await resp.json();
-      return data.password;
-    } catch (e) {
-      console.error(e);
-      return null;
-    }
-  }
-
-  // Função genérica de copy
+  
   async function copyText(text) {
     if (!text) return false;
     try {
@@ -82,162 +86,225 @@
     }
   }
 
-  // Ícone de feedback visual
   function setTempIcon(btn, ok) {
     if (!btn.dataset.originalHtml) {
       btn.dataset.originalHtml = btn.innerHTML;
     }
-    if (btn.dataset.restoreTimerId) {
-      clearTimeout(Number(btn.dataset.restoreTimerId));
-    }
-    btn.innerHTML = ok
-      ? '<i class="fa-solid fa-check"></i>'
-      : '<i class="fa-solid fa-xmark"></i>';
+    if (btn.dataset.restoreTimerId) clearTimeout(Number(btn.dataset.restoreTimerId));
+    
+    btn.innerHTML = ok ? '<i class="fa-solid fa-check"></i>' : '<i class="fa-solid fa-xmark"></i>';
     
     const id = setTimeout(() => {
       btn.innerHTML = btn.dataset.originalHtml;
-      btn.dataset.restoreTimerId = "";
     }, 1000);
     btn.dataset.restoreTimerId = String(id);
   }
 
-  // Lógica do botão "Olho"
+  // --- ACTIONS (View / Create) ---
+
+  async function fetchEncryptedData(id) {
+    const resp = await fetch(`/api/password/${id}/`, {
+      method: "POST",
+      headers: { "X-CSRFToken": getCookie("csrftoken") },
+    });
+    if (!resp.ok) throw new Error("Erro de rede");
+    const data = await resp.json();
+    return data.password;
+  }
+
   async function toggleSecret(toggleBtn) {
     const wrap = toggleBtn.closest(".cellActions");
     const displayEl = wrap.querySelector(".js-secret-display");
     const id = wrap.dataset.id;
-    
     const isPressed = toggleBtn.getAttribute("aria-pressed") === "true";
-    
+
     if (isPressed) {
-      // Ocultar
       displayEl.textContent = "••••••••";
       toggleBtn.setAttribute("aria-pressed", "false");
       toggleBtn.innerHTML = '<i class="fa-regular fa-eye"></i>';
     } else {
-      // Exibir - Busca no servidor
-      toggleBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i>'; // Loading
-      const password = await fetchPassword(id);
+      const key = await requestMasterPassword();
+      if (!key) return;
+
+      toggleBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i>';
       
-      if (password) {
-        displayEl.textContent = password;
-        toggleBtn.setAttribute("aria-pressed", "true");
-        toggleBtn.innerHTML = '<i class="fa-regular fa-eye-slash"></i>';
-      } else {
-        setTempIcon(toggleBtn, false); // Erro
+      try {
+        const encryptedStr = await fetchEncryptedData(id);
+        const plainText = await decryptData(encryptedStr, key);
+
+        if (plainText) {
+          displayEl.textContent = plainText;
+          toggleBtn.setAttribute("aria-pressed", "true");
+          toggleBtn.innerHTML = '<i class="fa-regular fa-eye-slash"></i>';
+        } else {
+          alert("Falha ao descriptografar. A senha mestra está correta?");
+          masterKeyCache = null; // Reseta para tentar novamente
+          toggleBtn.innerHTML = '<i class="fa-regular fa-eye"></i>';
+        }
+      } catch (e) {
+        setTempIcon(toggleBtn, false);
         toggleBtn.innerHTML = '<i class="fa-regular fa-eye"></i>';
       }
     }
   }
 
-  // Lógica do botão "Copiar Senha"
   async function copyPasswordHandler(btn) {
     const wrap = btn.closest(".cellActions");
     const id = wrap.dataset.id;
     const displayEl = wrap.querySelector(".js-secret-display");
     
-    // Se já estiver visível na tela, copia direto do texto
     let password = displayEl.textContent;
     if (password === "••••••••") {
-       // Se estiver oculto, busca no servidor pra copiar
+       const key = await requestMasterPassword();
+       if (!key) return;
+       
        btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i>';
-       password = await fetchPassword(id);
-       btn.innerHTML = '<i class="fa-regular fa-copy"></i>'; // Restaura ícone
+       try {
+         const encryptedStr = await fetchEncryptedData(id);
+         password = await decryptData(encryptedStr, key);
+         if (!password) throw new Error("Decryption fail");
+         btn.innerHTML = '<i class="fa-regular fa-copy"></i>';
+       } catch {
+         setTempIcon(btn, false);
+         masterKeyCache = null;
+         btn.innerHTML = '<i class="fa-regular fa-copy"></i>';
+         return;
+       }
     }
 
     const ok = await copyText(password);
     setTempIcon(btn, ok);
-
     if (ok) {
-      setTimeout(async () => {
-        try {
-          const currentText = await navigator.clipboard.readText();
-          if (currentText === password) {
-            await navigator.clipboard.writeText("");
-          }
-        } catch (e) {
-          navigator.clipboard.writeText("").catch(() => {}); 
+        setTimeout(() => { navigator.clipboard.writeText("").catch(()=>{}) }, 15000);
+    }
+  }
+
+  // --- MODAL LOGIC ---
+
+  const modal = document.getElementById("addLoginModal");
+  const form = document.getElementById("addLoginForm");
+
+  function setupModal() {
+    if (!modal) return;
+    
+    const openBtn = document.querySelector(".js-open-modal");
+    if(openBtn) openBtn.addEventListener("click", () => modal.showModal());
+
+    document.querySelectorAll(".js-close-modal").forEach(btn => {
+      btn.addEventListener("click", () => modal.close());
+    });
+
+    form.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const submitBtn = form.querySelector("button[type='submit']");
+      const originalText = submitBtn.innerText;
+      
+      const key = await requestMasterPassword();
+      if (!key) return;
+
+      submitBtn.disabled = true;
+      submitBtn.innerText = "Criptografando...";
+
+      try {
+        const formData = new FormData(form);
+        const encryptedPass = await encryptData(formData.get("password"), key);
+
+        const payload = {
+            service: formData.get("service"),
+            type_id: formData.get("type_id"),
+            login: formData.get("login"),
+            password: encryptedPass,
+            notes: formData.get("notes")
+        };
+
+        const resp = await fetch("/api/login/create/", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "X-CSRFToken": getCookie("csrftoken"),
+            },
+            body: JSON.stringify(payload)
+        });
+
+        if (resp.ok) {
+            window.location.reload();
+        } else {
+            alert("Erro ao salvar.");
         }
-      }, 15000); // 15s
-    }
-  }
-
-  function syncFolderUI(folderRow) {
-    const group = folderRow.getAttribute("data-group");
-    if (group == null) return;
-
-    const expanded = folderRow.getAttribute("aria-expanded") === "true";
-
-    const iconWrap = folderRow.querySelector(".folderRow__icon");
-    if (iconWrap) {
-      iconWrap.innerHTML = expanded
-        ? '<i class="fa-solid fa-chevron-down"></i>'
-        : '<i class="fa-solid fa-chevron-right"></i>';
-    }
-
-    document
-      .querySelectorAll(`.js-login-row[data-group="${group}"]`)
-      .forEach((tr) => tr.classList.toggle("is-hidden", !expanded));
-  }
-
-  const searching = isSearchMode();
-
-  function toggleFolder(folderRow) {
-    const group = getFolderGroupId(folderRow);
-    if (group == null) return;
-
-    const expanded = folderRow.getAttribute("aria-expanded") === "true";
-    const nextExpanded = !expanded;
-
-    setExpanded(folderRow, nextExpanded);
-
-    // Só persiste fora do modo de busca (para "voltar ao estado anterior")
-    if (!searching) {
-      const state = loadFolderState();
-      state[group] = nextExpanded;
-      saveFolderState(state);
-    }
-  }
-
-  if (searching) {
-    getFolderRows().forEach((row) => setExpanded(row, true));
-  } else {
-    const state = loadFolderState();
-    getFolderRows().forEach((row) => {
-      const group = getFolderGroupId(row);
-      const expanded = group != null ? !!state[group] : false;
-      setExpanded(row, expanded);
+      } catch (err) {
+        console.error(err);
+        alert("Erro no processamento.");
+      } finally {
+        submitBtn.disabled = false;
+        submitBtn.innerText = originalText;
+      }
     });
   }
 
-  // garante ícone/linhas consistentes no carregamento
-  document.querySelectorAll(".js-folder").forEach((row) => syncFolderUI(row));
+  // --- FOLDER LOGIC (Mantinada igual) ---
+  
+  function loadFolderState() {
+    try { return JSON.parse(localStorage.getItem(FOLDER_STATE_KEY) || "{}"); } catch { return {}; }
+  }
+  function saveFolderState(state) {
+    try { localStorage.setItem(FOLDER_STATE_KEY, JSON.stringify(state || {})); } catch {}
+  }
+  function setExpanded(folderRow, expanded) {
+    folderRow.setAttribute("aria-expanded", String(!!expanded));
+    const group = folderRow.dataset.group;
+    if (group == null) return;
+    
+    const icon = folderRow.querySelector(".folderRow__icon");
+    if (icon) icon.innerHTML = expanded ? '<i class="fa-solid fa-chevron-down"></i>' : '<i class="fa-solid fa-chevron-right"></i>';
+    
+    document.querySelectorAll(`.js-login-row[data-group="${group}"]`)
+      .forEach((tr) => tr.classList.toggle("is-hidden", !expanded));
+  }
+  function toggleFolder(folderRow) {
+    const group = folderRow.dataset.group;
+    const expanded = folderRow.getAttribute("aria-expanded") === "true";
+    const next = !expanded;
+    setExpanded(folderRow, next);
+    
+    if (!new URLSearchParams(window.location.search).get("q")) {
+        const state = loadFolderState();
+        state[group] = next;
+        saveFolderState(state);
+    }
+  }
+
+  // --- INIT ---
+
+  const isSearch = !!new URLSearchParams(window.location.search).get("q");
+  if (isSearch) {
+    document.querySelectorAll(".js-folder").forEach(r => setExpanded(r, true));
+  } else {
+    const state = loadFolderState();
+    document.querySelectorAll(".js-folder").forEach(r => {
+        const g = r.dataset.group;
+        setExpanded(r, !!state[g]);
+    });
+  }
+
+  setupModal();
 
   document.addEventListener("click", async (ev) => {
-    const folder = ev.target.closest(".js-folder");
-    if (folder) {
-      toggleFolder(folder);
-      return;
+    if (ev.target.closest(".js-folder")) {
+        toggleFolder(ev.target.closest(".js-folder"));
+        return;
     }
-
     const toggleBtn = ev.target.closest(".js-toggle-secret");
-    if (toggleBtn) {
-      toggleSecret(toggleBtn);
-      return;
-    }
-
+    if (toggleBtn) { toggleSecret(toggleBtn); return; }
+    
     const copyLoginBtn = ev.target.closest(".js-copy");
     if (copyLoginBtn) {
-      const text = copyLoginBtn.dataset.copy || "";
-      const ok = await copyText(text);
-      setTempIcon(copyLoginBtn, ok);
-      return;
+        const ok = await copyText(copyLoginBtn.dataset.copy || "");
+        setTempIcon(copyLoginBtn, ok);
+        return;
     }
-
+    
     const copyPassBtn = ev.target.closest(".js-copy-password");
-    if (copyPassBtn) {
-      copyPasswordHandler(copyPassBtn);
-      return;
-    }
+    if (copyPassBtn) { copyPasswordHandler(copyPassBtn); return; }
   });
+
 })();
