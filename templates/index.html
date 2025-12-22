@@ -17,14 +17,24 @@
       </div>
 
       <div class="topbar__right">
-        <button class="btn btn--primary js-open-modal" type="button" style="margin-right: 8px;" title="Cadastrar um Novo Login">
+        <button
+          class="btn btn--primary js-open-modal"
+          type="button"
+          style="margin-right: 8px"
+          title="Cadastrar um Novo Login"
+        >
           <i class="fa-solid fa-plus"></i>
         </button>
 
         {% if user.is_superuser %}
-          <a class="btn" href="/admin/" target="_self" title="Acessar o Portal de Administração">
-            <i class="fa-solid fa-gear"></i>
-          </a>
+        <a
+          class="btn"
+          href="/admin/"
+          target="_self"
+          title="Acessar o Portal de Administração"
+        >
+          <i class="fa-solid fa-gear"></i>
+        </a>
         {% endif %}
       </div>
     </header>
@@ -41,7 +51,7 @@
         />
         <button class="btn btn--primary" type="submit">Buscar</button>
         {% if q %}
-          <a class="btn btn--ghost" href="/">Limpar</a>
+        <a class="btn btn--ghost" href="/">Limpar</a>
         {% endif %}
       </form>
 
@@ -63,62 +73,92 @@
 
             <tbody>
               {% for group in groups %}
-                <tr class="folderRow js-folder" data-group="{{ group.key }}" aria-expanded="false">
-                  <td colspan="3">
-                    <div class="folderRow__content">
-                      <span class="folderRow__icon" aria-hidden="true">
-                        <i class="fa-solid fa-chevron-right"></i>
-                      </span>
-                      <strong class="folderRow__title">{{ group.title }}</strong>
-                      <span class="muted folderRow__count">{{ group.items|length }} registro(s)</span>
-                    </div>
-                  </td>
-                </tr>
+              <tr
+                class="folderRow js-folder"
+                data-group="{{ group.key }}"
+                aria-expanded="false"
+              >
+                <td colspan="3">
+                  <div class="folderRow__content">
+                    <span class="folderRow__icon" aria-hidden="true">
+                      <i class="fa-solid fa-chevron-right"></i>
+                    </span>
+                    <strong class="folderRow__title">{{ group.title }}</strong>
+                    <span class="muted folderRow__count"
+                      >{{ group.items|length }} registro(s)</span
+                    >
+                  </div>
+                </td>
+              </tr>
 
-                {% for item in group.items %}
-                  <tr class="loginRow js-login-row is-hidden" data-group="{{ group.key }}">
-                    <td>{{ item.service }}</td>
+              {% for item in group.items %}
+              <tr
+                class="loginRow js-login-row is-hidden"
+                data-group="{{ group.key }}"
+              >
+                <td>{{ item.service }}</td>
 
-                    <td>
-                      <div class="cellActions">
-                        <div>{{ item.login }}</div>
-                        <button class="btn btn--tiny js-copy" type="button" data-copy="{{ item.login }}" title="Copiar Login">
-                          <i class="fa-regular fa-copy"></i>
-                        </button>                       
-                      </div>
-                    </td>
+                <td>
+                  <div class="cellActions">
+                    <div>{{ item.login }}</div>
+                    <button
+                      class="btn btn--tiny js-copy"
+                      type="button"
+                      data-copy="{{ item.login }}"
+                      title="Copiar Login"
+                    >
+                      <i class="fa-regular fa-copy"></i>
+                    </button>
+                  </div>
+                </td>
 
-                    <td>
-                      <div class="cellActions" data-id="{{ item.id }}">
-                        <div class="js-secret-display">••••••••</div>
+                <td>
+                  <div class="cellActions" data-id="{{ item.id }}">
+                    <div class="js-secret-display">••••••••</div>
 
-                        <button class="btn btn--tiny js-copy-password" type="button" title="Copiar Senha">
-                          <i class="fa-regular fa-copy"></i>
-                        </button>
+                    <button
+                      class="btn btn--tiny js-copy-password"
+                      type="button"
+                      title="Copiar Senha"
+                    >
+                      <i class="fa-regular fa-copy"></i>
+                    </button>
 
-                        <button class="btn btn--tiny js-toggle-secret" type="button" aria-pressed="false" title="Exibir/Ocultar Senha" >
-                          <i class="fa-regular fa-eye"></i>
-                        </button>
+                    <button
+                      class="btn btn--tiny js-toggle-secret"
+                      type="button"
+                      aria-pressed="false"
+                      title="Exibir/Ocultar Senha"
+                    >
+                      <i class="fa-regular fa-eye"></i>
+                    </button>
 
-                        <button class="btn btn--tiny js-edit-login" type="button" title="Editar Login">
-                          <i class="fa-regular fa-pen-to-square"></i>
-                        </button>                        
+                    <button
+                      class="btn btn--tiny js-edit-login"
+                      type="button"
+                      title="Editar Login"
+                    >
+                      <i class="fa-regular fa-pen-to-square"></i>
+                    </button>
 
-                        <button class="btn btn--tiny js-toggle-favorite" type="button" title="Favoritar Login">
-                          {% if item.is_fav %}
-                            <i class="fa-solid fa-star" style="color: #fbbf24;"></i>
-                          {% else %}
-                            <i class="fa-regular fa-star"></i>
-                          {% endif %}
-                        </button>                      
-                      </div>
-                    </td>
-                  </tr>
-                {% endfor %}
-              {% empty %}
-                <tr>
-                  <td colspan="3" class="muted">Nenhum login encontrado.</td>
-                </tr>
+                    <button
+                      class="btn btn--tiny js-toggle-favorite"
+                      type="button"
+                      title="Favoritar Login"
+                    >
+                      {% if item.is_fav %}
+                      <i class="fa-solid fa-star" style="color: #fbbf24"></i>
+                      {% else %}
+                      <i class="fa-regular fa-star"></i>
+                      {% endif %}
+                    </button>
+                  </div>
+                </td>
+              </tr>
+              {% endfor %} {% empty %}
+              <tr>
+                <td colspan="3" class="muted">Nenhum login encontrado.</td>
+              </tr>
               {% endfor %}
             </tbody>
           </table>
@@ -130,40 +170,46 @@
       <div class="modal__content">
         <div class="modal__header">
           <h3>Novo Login</h3>
-          <button class="btn btn--tiny js-close-modal"><i class="fa-solid fa-xmark"></i></button>
+          <button class="btn btn--tiny js-close-modal">
+            <i class="fa-solid fa-xmark"></i>
+          </button>
         </div>
-        
+
         <form id="addLoginForm" class="form">
           <div class="form__group">
             <label>Serviço</label>
-            <input type="text" name="service" required autocomplete="off">
+            <input type="text" name="service" required autocomplete="off" />
           </div>
-    
+
           <div class="form__group">
             <label>Categoria</label>
             <select name="type_id">
-                <option value="">------------</option>
-                {% for t in all_types %}
-                    <option value="{{ t.id }}">{{ t.title }}</option>
-                {% endfor %}
+              <option value="">------------</option>
+              {% for t in all_types %}
+              <option value="{{ t.id }}">{{ t.title }}</option>
+              {% endfor %}
             </select>
           </div>
-    
+
           <div class="form__group">
             <label>Login</label>
-            <input type="text" name="login" required autocomplete="off">
+            <input type="text" name="login" required autocomplete="off" />
           </div>
-    
+
           <div class="form__group">
             <label>Senha</label>
-            <input type="password" name="password" autocomplete="new-password">
+            <input
+              type="password"
+              name="password"
+              autocomplete="new-password"
+            />
           </div>
-    
+
           <div class="form__group">
             <label>Anotações</label>
             <textarea name="notes" rows="3"></textarea>
           </div>
-    
+
           <div class="modal__actions">
             <button type="button" class="btn js-close-modal">Cancelar</button>
             <button type="submit" class="btn btn--primary">Salvar</button>
@@ -173,19 +219,27 @@
     </dialog>
 
     <dialog class="modal" id="masterPasswordModal">
-      <div class="modal__content" style="max-width: 400px;">
+      <div class="modal__content" style="max-width: 400px">
         <div class="modal__header modal__header--center">
           <h3>Desbloquear Cofre</h3>
         </div>
-        
+
         <form id="masterPasswordForm" class="form">
           <div class="form__group">
             <label>Digite sua Senha Mestra para continuar:</label>
-            <input type="password" id="masterPassInput" required autocomplete="current-password" autofocus>
+            <input
+              type="password"
+              id="masterPassInput"
+              required
+              autocomplete="current-password"
+              autofocus
+            />
           </div>
-    
+
           <div class="modal__actions">
-            <button type="submit" class="btn btn--primary" style="width: 100%">Desbloquear</button>
+            <button type="submit" class="btn btn--primary" style="width: 100%">
+              Desbloquear
+            </button>
           </div>
         </form>
       </div>
@@ -195,57 +249,79 @@
       <div class="modal__content">
         <div class="modal__header">
           <h3>Editar Login</h3>
-          <button class="btn btn--tiny js-close-modal"><i class="fa-solid fa-xmark"></i></button>
+          <button class="btn btn--tiny js-close-modal">
+            <i class="fa-solid fa-xmark"></i>
+          </button>
         </div>
-        
+
         <form id="editLoginForm" class="form">
-          <input type="hidden" name="login_id"> <div class="form__group">
+          <input type="hidden" name="login_id" />
+          <div class="form__group">
             <label>Serviço</label>
-            <input type="text" name="service" required autocomplete="off">
+            <input type="text" name="service" required autocomplete="off" />
           </div>
-    
+
           <div class="form__group">
             <label>Categoria</label>
             <select name="type_id">
-                <option value="">------------</option>
-                {% for t in all_types %}
-                    <option value="{{ t.id }}">{{ t.title }}</option>
-                {% endfor %}
+              <option value="">------------</option>
+              {% for t in all_types %}
+              <option value="{{ t.id }}">{{ t.title }}</option>
+              {% endfor %}
             </select>
           </div>
-    
+
           <div class="form__group">
             <label>Login</label>
-            <input type="text" name="login" required autocomplete="off">
+            <input type="text" name="login" required autocomplete="off" />
           </div>
-    
+
           <div class="form__group">
             <label>Senha</label>
-            <div style="position: relative;">
-                <input type="password" name="password" autocomplete="new-password">
-                <button type="button" class="btn btn--tiny js-toggle-pass-visibility" 
-                        style="position: absolute; right: 8px; top: 8px;" tabindex="-1">
-                    <i class="fa-regular fa-eye"></i>
-                </button>
+            <div style="position: relative">
+              <input
+                type="password"
+                name="password"
+                autocomplete="new-password"
+              />
+              <button
+                type="button"
+                class="btn btn--tiny js-toggle-pass-visibility"
+                style="position: absolute; right: 8px; top: 8px"
+                tabindex="-1"
+              >
+                <i class="fa-regular fa-eye"></i>
+              </button>
             </div>
-            <small class="muted" style="font-size: 0.75rem; margin-top: 4px; display: block;">
-                Deixe em branco para gerar uma nova senha.
+            <small
+              class="muted"
+              style="font-size: 0.75rem; margin-top: 4px; display: block"
+            >
+              Deixe em branco para gerar uma nova senha.
             </small>
           </div>
-    
+
           <div class="form__group">
             <label>Anotações</label>
             <textarea name="notes" rows="3"></textarea>
           </div>
-    
-          <div class="modal__actions" style="justify-content: space-between;">
-            <button type="button" class="btn btn--danger js-delete-login" style="background-color: #ef4444; border-color: #ef4444; color: white;">
-                Excluir
+
+          <div class="modal__actions" style="justify-content: space-between">
+            <button
+              type="button"
+              class="btn btn--danger js-delete-login"
+              style="
+                background-color: #ef4444;
+                border-color: #ef4444;
+                color: white;
+              "
+            >
+              Excluir
             </button>
 
-            <div style="display: flex; gap: 12px;">
-                <button type="button" class="btn js-close-modal">Cancelar</button>
-                <button type="submit" class="btn btn--primary">Salvar</button>
+            <div style="display: flex; gap: 12px">
+              <button type="button" class="btn js-close-modal">Cancelar</button>
+              <button type="submit" class="btn btn--primary">Salvar</button>
             </div>
           </div>
         </form>
