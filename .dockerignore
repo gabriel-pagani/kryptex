@@ -124,4 +124,5 @@ certs/
 Makefile
 LICENSE
 README.md
+.gitignore
 docker-compose.yml
