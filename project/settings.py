@@ -15,8 +15,6 @@ ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', 'localhost').split(',')
 
 CSRF_TRUSTED_ORIGINS = os.getenv('CSRF_TRUSTED_ORIGINS', 'https://localhost').split(',')
 
-ENCRYPTION_KEY = os.getenv('ENCRYPTION_KEY')
-
 INSTALLED_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',
