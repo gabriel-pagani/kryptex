@@ -42,12 +42,10 @@ def home_view(request):
 
     groups = sorted(groups_map.values(), key=lambda g: g["title"].lower())
 
-
-
     total_count = sum(len(g["items"]) for g in groups)
 
     if favorites:
-        groups.insert(0, {"key": "fav", "title": "Favoritos", "items": favorites})    
+        groups.insert(0, {"key": "fav", "title": "Favoritos", "items": favorites})
 
     all_types = LoginTypes.objects.all()
 
@@ -76,7 +74,7 @@ def get_login_details_api(request, login_id):
 def create_login_api(request):
     try:
         data = json.loads(request.body)
-        
+
         if not all(k in data for k in ("service", "login", "password")):
             return HttpResponseBadRequest("Dados incompletos")
 
@@ -111,15 +109,15 @@ def create_login_api(request):
 @user_passes_test(lambda u: u.is_active and u.is_staff)
 def update_login_api(request, login_id):
     login_item = get_object_or_404(Logins, pk=login_id)
-    
+
     try:
         data = json.loads(request.body)
-        
+
         # Atualiza campos básicos
         login_item.service = data.get("service", login_item.service)
         login_item.login = data.get("login", login_item.login)
         login_item.notes = data.get("notes", login_item.notes)
-        
+
         # Atualiza favorito
         if "is_fav" in data:
             login_item.is_fav = bool(data["is_fav"])
