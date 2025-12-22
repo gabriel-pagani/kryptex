@@ -20,6 +20,7 @@ class Logins(models.Model):
     login = models.CharField(max_length=100)
     password = models.TextField(blank=True, null=True)
     notes = models.TextField(blank=True, null=True)
+    is_fav = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
