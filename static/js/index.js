@@ -168,6 +168,34 @@
     btn.dataset.restoreTimerId = String(id);
   }
 
+  // --- PARTIAL REFRESH (sem recarregar a página / sem perder a chave mestra) ---
+  async function refreshLoginTableFromServer() {
+    // Busca o HTML da página atual e troca somente a parte da tabela/contadores.
+    const resp = await fetch(window.location.href, {
+      method: "GET",
+      headers: {
+        "X-Requested-With": "XMLHttpRequest",
+      },
+      cache: "no-store",
+    });
+
+    if (!resp.ok) throw new Error("Falha ao atualizar lista");
+
+    const html = await resp.text();
+    const doc = new DOMParser().parseFromString(html, "text/html");
+
+    const newTbody = doc.querySelector(".table tbody");
+    const oldTbody = document.querySelector(".table tbody");
+    if (newTbody && oldTbody) oldTbody.replaceWith(newTbody);
+
+    const newCount = doc.querySelector(".card__header .muted");
+    const oldCount = document.querySelector(".card__header .muted");
+    if (newCount && oldCount) oldCount.textContent = newCount.textContent;
+
+    // Reaplica o estado das pastas (folders) no DOM novo
+    applyFolderStateToCurrentDom();
+  }
+
   // --- ACTIONS ---
 
   async function fetchEncryptedData(id) {
@@ -311,7 +339,9 @@
         });
 
         if (resp.ok) {
-          window.location.reload();
+          addModal.close();
+          addForm.reset();
+          await refreshLoginTableFromServer();
         } else {
           alert("Erro ao salvar.");
         }
@@ -382,7 +412,8 @@
           });
 
           if (resp.ok) {
-            window.location.reload(); // Recarrega para sumir da lista
+            editModal.close();
+            await refreshLoginTableFromServer();
           } else {
             alert("Erro ao excluir login.");
             deleteBtn.disabled = false;
@@ -438,7 +469,8 @@
         });
 
         if (resp.ok) {
-          window.location.reload();
+          editModal.close();
+          await refreshLoginTableFromServer();
         } else {
           alert("Erro ao atualizar login.");
         }
@@ -535,6 +567,21 @@
     }
   }
 
+  function applyFolderStateToCurrentDom() {
+    const isSearchNow = !!new URLSearchParams(window.location.search).get("q");
+    if (isSearchNow) {
+      document
+        .querySelectorAll(".js-folder")
+        .forEach((r) => setExpanded(r, true));
+    } else {
+      const state = loadFolderState();
+      document.querySelectorAll(".js-folder").forEach((r) => {
+        const g = r.dataset.group;
+        setExpanded(r, !!state[g]);
+      });
+    }
+  }
+
   // --- INIT ---
 
   const isSearch = !!new URLSearchParams(window.location.search).get("q");
@@ -549,6 +596,8 @@
       setExpanded(r, !!state[g]);
     });
   }
+
+  applyFolderStateToCurrentDom();
 
   setupAddModal();
   setupEditModal();
@@ -596,7 +645,7 @@
           throw new Error("Falha ao favoritar");
         }
 
-        window.location.reload();
+        await refreshLoginTableFromServer();
       } catch (e) {
         console.error(e);
         alert("Erro ao favoritar. Recarregue a página.");
