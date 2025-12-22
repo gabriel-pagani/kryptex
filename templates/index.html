@@ -63,7 +63,7 @@
 
             <tbody>
               {% for group in groups %}
-                <tr class="folderRow js-folder" data-group="{{ forloop.counter0 }}" aria-expanded="false">
+                <tr class="folderRow js-folder" data-group="{{ group.key }}" aria-expanded="false">
                   <td colspan="3">
                     <div class="folderRow__content">
                       <span class="folderRow__icon" aria-hidden="true">
@@ -76,7 +76,7 @@
                 </tr>
 
                 {% for item in group.items %}
-                  <tr class="loginRow js-login-row is-hidden" data-group="{{ forloop.parentloop.counter0 }}">
+                  <tr class="loginRow js-login-row is-hidden" data-group="{{ group.key }}">
                     <td>{{ item.service }}</td>
 
                     <td>

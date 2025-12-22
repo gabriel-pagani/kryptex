@@ -1,7 +1,7 @@
 import json
 from django.shortcuts import render, get_object_or_404
 from django.contrib.auth.decorators import user_passes_test
-from django.http import JsonResponse, HttpResponseForbidden, HttpResponseBadRequest
+from django.http import JsonResponse, HttpResponseBadRequest
 from django.views.decorators.http import require_POST
 from django.db.models import Q
 from .models import Logins, LoginTypes
@@ -13,9 +13,9 @@ def home_view(request):
 
     logins = (
         Logins.objects.select_related("type")
-        .defer("password") 
+        .defer("password")
         .all()
-        .order_by("type__title", "-is_fav", "service") 
+        .order_by("type__title", "-is_fav", "service")
     )
 
     if q:
@@ -30,15 +30,24 @@ def home_view(request):
 
     groups_map = {}
     for item in logins:
-        title = item.type.title if item.type else "• • •"
-        groups_map.setdefault(title, []).append(item)
+        if item.type:
+            key = f"type-{item.type.id}"
+            title = item.type.title
+        else:
+            key = "none"
+            title = "• • •"
 
-    groups = [{"title": title, "items": items} for title, items in sorted(groups_map.items(), key=lambda x: x[0].lower())]
+        groups_map.setdefault(key, {"key": key, "title": title, "items": []})
+        groups_map[key]["items"].append(item)
+
+    groups = sorted(groups_map.values(), key=lambda g: g["title"].lower())
+
+
 
     total_count = sum(len(g["items"]) for g in groups)
 
     if favorites:
-        groups.insert(0, {"title": "Favoritos", "items": favorites})
+        groups.insert(0, {"key": "fav", "title": "Favoritos", "items": favorites})    
 
     all_types = LoginTypes.objects.all()
 
