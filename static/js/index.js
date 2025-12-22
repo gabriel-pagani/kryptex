@@ -553,6 +553,52 @@
         return;
     }
 
+    const favBtn = ev.target.closest(".js-toggle-favorite");
+    if (favBtn) {
+        const wrap = favBtn.closest(".cellActions");
+        const id = wrap.dataset.id;
+        const icon = favBtn.querySelector("i");
+        
+        // Determina novo estado baseado na classe atual
+        const isCurrentlyFav = icon.classList.contains("fa-solid");
+        const newStatus = !isCurrentlyFav;
+
+        // Atualização Otimista da UI
+        if (newStatus) {
+            icon.classList.remove("fa-regular");
+            icon.classList.add("fa-solid");
+            icon.style.color = "#fbbf24"; // Amarelo
+        } else {
+            icon.classList.remove("fa-solid");
+            icon.classList.add("fa-regular");
+            icon.style.color = "";
+        }
+
+        try {
+            // Envia apenas o campo is_fav
+            const resp = await fetch(`/api/login/${id}/update/`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "X-CSRFToken": getCookie("csrftoken"),
+                },
+              body: JSON.stringify({ is_fav: newStatus })
+            });
+
+            if (!resp.ok) {
+                // Reverte em caso de erro
+                throw new Error("Falha ao favoritar");
+            }
+            
+            window.location.reload();
+
+        } catch (e) {
+            console.error(e);
+            alert("Erro ao favoritar. Recarregue a página.");
+        }
+        return;
+    }
+
     const toggleBtn = ev.target.closest(".js-toggle-secret");
     if (toggleBtn) { toggleSecret(toggleBtn); return; }
     
