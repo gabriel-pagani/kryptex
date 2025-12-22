@@ -133,6 +133,17 @@
 
   // --- UI HELPERS ---
 
+  function generateStrongPassword(length = 50) {
+    const charset = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&()_+~|}{[]:;?><,./-=";
+    const values = new Uint32Array(length);
+    window.crypto.getRandomValues(values);
+    let password = "";
+    for (let i = 0; i < length; i++) {
+        password += charset[values[i] % charset.length];
+    }
+    return password;
+  }
+
   function getCookie(name) {
     let cookieValue = null;
     if (document.cookie && document.cookie !== '') {
@@ -286,11 +297,17 @@
       if (!key) return;
 
       submitBtn.disabled = true;
-      submitBtn.innerText = "Criptografando...";
+      submitBtn.innerText = "Processando...";
 
       try {
         const formData = new FormData(addForm);
-        const encryptedPass = await encryptData(formData.get("password"), key);
+        
+        let password = formData.get("password");
+        if (!password) {
+            password = generateStrongPassword();
+        }
+
+        const encryptedPass = await encryptData(password, key);
 
         const payload = {
             service: formData.get("service"),
@@ -408,8 +425,12 @@
         const formData = new FormData(editForm);
         const loginId = formData.get("login_id");
         
-        // Criptografar a senha (seja a antiga descriptografada ou uma nova digitada)
-        const encryptedPass = await encryptData(formData.get("password"), key);
+        let password = formData.get("password");
+        if (!password) {
+            password = generateStrongPassword();
+        }
+        
+        const encryptedPass = await encryptData(password, key);
 
         const payload = {
             service: formData.get("service"),
