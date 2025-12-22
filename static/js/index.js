@@ -183,9 +183,6 @@
           toggleBtn.setAttribute("aria-pressed", "true");
           toggleBtn.innerHTML = '<i class="fa-regular fa-eye-slash"></i>';
         } else {
-          // Se falhar a descriptografia, pode ser que a chave salva na sessão esteja errada/antiga.
-          // Limpamos para pedir de novo.
-          sessionStorage.removeItem(SESSION_KEY_STORAGE);
           masterKeyCache = null;
           alert("Falha na descriptografia. A chave salva será redefinida.");
           
