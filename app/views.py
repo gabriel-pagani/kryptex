@@ -95,7 +95,7 @@ def create_login_api(request):
         )
         return JsonResponse({"status": "ok"})
     except Exception as e:
-        return JsonResponse({"status": "error", "message": str(e)}, status=500)
+        return JsonResponse({"status": "error"}, status=500)
 
 
 @require_POST
@@ -129,7 +129,7 @@ def update_login_api(request, login_id):
         login_item.save()
         return JsonResponse({"status": "ok"})
     except Exception as e:
-        return JsonResponse({"status": "error", "message": str(e)}, status=500)
+        return JsonResponse({"status": "error"}, status=500)
 
 
 @require_POST
@@ -140,7 +140,7 @@ def delete_login_api(request, login_id):
         login_item.delete()
         return JsonResponse({"status": "ok"})
     except Exception as e:
-        return JsonResponse({"status": "error", "message": str(e)}, status=500)
+        return JsonResponse({"status": "error"}, status=500)
 
 
 @require_POST
