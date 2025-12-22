@@ -84,7 +84,7 @@ def create_login_api(request):
         if data.get("type_id"):
             login_type = LoginTypes.objects.filter(pk=data["type_id"]).first()
 
-        Logins.objects.create(
+        new_item = Logins.objects.create(
             service=data["service"],
             login=data["login"],
             password=data["password"],
@@ -92,7 +92,17 @@ def create_login_api(request):
             is_fav=data.get("is_fav", False),
             type=login_type
         )
-        return JsonResponse({"status": "ok"})
+        return JsonResponse({
+            "status": "ok",
+            "item": {
+                "id": new_item.id,
+                "service": new_item.service,
+                "login": new_item.login,
+                "notes": new_item.notes or "",
+                "is_fav": bool(new_item.is_fav),
+                "type_id": new_item.type.id if new_item.type else ""
+            }
+        })
     except Exception as e:
         return JsonResponse({"status": "error"}, status=500)
 
@@ -126,7 +136,17 @@ def update_login_api(request, login_id):
                 login_item.type = None
 
         login_item.save()
-        return JsonResponse({"status": "ok"})
+        return JsonResponse({
+            "status": "ok",
+            "item": {
+                "id": login_item.id,
+                "service": login_item.service,
+                "login": login_item.login,
+                "notes": login_item.notes or "",
+                "is_fav": bool(login_item.is_fav),
+                "type_id": login_item.type.id if login_item.type else ""
+            }
+        })
     except Exception as e:
         return JsonResponse({"status": "error"}, status=500)
 
