@@ -104,8 +104,12 @@
                           <i class="fa-regular fa-pen-to-square"></i>
                         </button>                        
 
-                        <button class="btn btn--tiny" type="button" title="Favoritar Login">
-                          <i class="fa-regular fa-star"></i>
+                        <button class="btn btn--tiny js-toggle-favorite" type="button" title="Favoritar Login">
+                          {% if item.is_fav %}
+                            <i class="fa-solid fa-star" style="color: #fbbf24;"></i>
+                          {% else %}
+                            <i class="fa-regular fa-star"></i>
+                          {% endif %}
                         </button>                      
                       </div>
                     </td>
