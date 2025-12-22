@@ -124,3 +124,4 @@ certs/
 Makefile
 LICENSE
 README.md
+docker-compose.yml
