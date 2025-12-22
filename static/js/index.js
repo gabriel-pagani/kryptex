@@ -393,7 +393,7 @@
         // Confirmação simples do navegador
         if (
           !confirm(
-            "Tem certeza que deseja EXCLUIR este login? Esta ação não pode ser desfeita."
+            "Deseja EXCLUIR este login? Esta ação não pode ser desfeita."
           )
         ) {
           return;
