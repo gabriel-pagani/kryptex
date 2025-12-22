@@ -1,6 +1,5 @@
 (function () {
   const FOLDER_STATE_KEY = "kryptex.folderState.v1";
-  const SESSION_KEY_STORAGE = "kryptex.masterKey.session";
   const SALT = "KRYPTEX_STATIC_SALT_V1";
   const PBKDF2_ITERATIONS = 100000;
 
@@ -15,33 +14,8 @@
     );
     return window.crypto.subtle.deriveKey(
       { name: "PBKDF2", salt: enc.encode(SALT), iterations: PBKDF2_ITERATIONS, hash: "SHA-256" },
-      keyMaterial, { name: "AES-GCM", length: 256 }, true, ["encrypt", "decrypt"]
+      keyMaterial, { name: "AES-GCM", length: 256 }, false, ["encrypt", "decrypt"]
     );
-  }
-
-  // Exporta a chave para JSON (JWK) para poder salvar no SessionStorage
-  async function exportAndSaveKey(key) {
-    try {
-      const exported = await window.crypto.subtle.exportKey("jwk", key);
-      sessionStorage.setItem(SESSION_KEY_STORAGE, JSON.stringify(exported));
-    } catch (e) {
-      console.error("Erro ao salvar chave na sessão:", e);
-    }
-  }
-
-  // Tenta recuperar e importar a chave do SessionStorage
-  async function loadKeyFromSession() {
-    const raw = sessionStorage.getItem(SESSION_KEY_STORAGE);
-    if (!raw) return null;
-    try {
-      const jwk = JSON.parse(raw);
-      return await window.crypto.subtle.importKey(
-        "jwk", jwk, { name: "AES-GCM" }, true, ["encrypt", "decrypt"]
-      );
-    } catch (e) {
-      console.error("Erro ao carregar sessão:", e);
-      return null;
-    }
   }
 
   async function encryptData(plainText, key) {
@@ -108,24 +82,13 @@
   }
 
   async function requestMasterPassword() {
-    // 1. Verifica se já está na memória RAM (uso imediato)
     if (masterKeyCache) return masterKeyCache;
 
-    // 2. Tenta recuperar da Sessão (F5 / Navegação / Admin)
-    const sessionKey = await loadKeyFromSession();
-    if (sessionKey) {
-      masterKeyCache = sessionKey;
-      return masterKeyCache;
-    }
-
-    // 3. Se não tiver em lugar nenhum, abre o Modal e pede a senha
     const password = await askPasswordViaModal();
     
     if (!password || password.trim().length === 0) return null;
 
-    // 4. Gera a chave e SALVA na sessão
     const key = await getMasterKey(password);
-    await exportAndSaveKey(key);
     
     masterKeyCache = key;
     return masterKeyCache;
