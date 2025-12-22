@@ -360,8 +360,25 @@
   const editModal = document.getElementById("editLoginModal");
   const editForm = document.getElementById("editLoginForm");
 
+  function resetEditModalUi() {
+    if (!editForm) return;
+
+    const deleteBtn = editForm.querySelector(".js-delete-login");
+    if (deleteBtn) {
+      // guarda o HTML original uma vez (com ícone etc.)
+      if (!deleteBtn.dataset.originalHtml) {
+        deleteBtn.dataset.originalHtml = deleteBtn.innerHTML;
+      }
+      deleteBtn.disabled = false;
+      deleteBtn.innerHTML = deleteBtn.dataset.originalHtml;
+    }
+  }
+
   function setupEditModal() {
     if (!editModal) return;
+
+    // Sempre que fechar o modal, reseta UI (inclui botão Excluir)
+    editModal.addEventListener("close", resetEditModalUi);
 
     // Fechar modal
     editModal.querySelectorAll(".js-close-modal").forEach((btn) => {
@@ -383,9 +400,14 @@
       });
     }
 
-    // --- LÓGICA DE EXCLUSÃO (NOVO) ---
+    // --- LÓGICA DE EXCLUSÃO ---
     const deleteBtn = editForm.querySelector(".js-delete-login");
     if (deleteBtn) {
+      // garante dataset.originalHtml
+      if (!deleteBtn.dataset.originalHtml) {
+        deleteBtn.dataset.originalHtml = deleteBtn.innerHTML;
+      }
+
       deleteBtn.addEventListener("click", async () => {
         const loginId = editForm.querySelector("[name='login_id']").value;
         if (!loginId) return;
@@ -399,7 +421,6 @@
           return;
         }
 
-        const originalText = deleteBtn.innerHTML;
         deleteBtn.disabled = true;
         deleteBtn.innerText = "Excluindo...";
 
@@ -416,14 +437,12 @@
             await refreshLoginTableFromServer();
           } else {
             alert("Erro ao excluir login.");
-            deleteBtn.disabled = false;
-            deleteBtn.innerHTML = originalText;
+            resetEditModalUi();
           }
         } catch (e) {
           console.error(e);
           alert("Erro de conexão.");
-          deleteBtn.disabled = false;
-          deleteBtn.innerHTML = originalText;
+          resetEditModalUi();
         }
       });
     }
@@ -486,6 +505,7 @@
 
   // Função chamada ao clicar no botão de lápis
   async function openEditLogin(btn) {
+    resetEditModalUi();
     const wrap = btn.closest(".cellActions");
     const id = wrap.dataset.id; // Pega o ID da linha
 
