@@ -445,7 +445,8 @@
         const data = await resp.json();
 
         // 3. Descriptografa a senha para preencher o formulário
-        const plainPassword = await decryptData(data.password, key);
+        const encryptedStr = await fetchEncryptedData(id);
+        const plainPassword = await decryptData(encryptedStr, key);
         if (plainPassword === null) {
             alert("Erro: Não foi possível descriptografar a senha com a chave atual.");
             btn.innerHTML = '<i class="fa-regular fa-pen-to-square"></i>';
@@ -464,7 +465,6 @@
         editModal.showModal();
 
     } catch (e) {
-        console.error(e);
         alert("Erro ao carregar dados do login.");
     } finally {
         btn.innerHTML = '<i class="fa-regular fa-pen-to-square"></i>';
