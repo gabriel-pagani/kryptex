@@ -15,7 +15,7 @@ def home_view(request):
         Logins.objects.select_related("type")
         .defer("password") 
         .all()
-        .order_by("type__title", "service")
+        .order_by("type__title", "-is_fav", "service") 
     )
 
     if q:
@@ -26,6 +26,8 @@ def home_view(request):
             | Q(notes__icontains=q)
         )
 
+    favorites = [item for item in logins if item.is_fav]
+
     groups_map = {}
     for item in logins:
         title = item.type.title if item.type else "• • •"
@@ -34,7 +36,10 @@ def home_view(request):
     groups = [{"title": title, "items": items} for title, items in sorted(groups_map.items(), key=lambda x: x[0].lower())]
 
     total_count = sum(len(g["items"]) for g in groups)
-    
+
+    if favorites:
+        groups.insert(0, {"title": "Favoritos", "items": favorites})
+
     all_types = LoginTypes.objects.all()
 
     return render(
@@ -51,8 +56,9 @@ def get_login_details_api(request, login_id):
         "id": login_item.id,
         "service": login_item.service,
         "login": login_item.login,
-        "password": login_item.password, # Retorna o blob cifrado
+        "password": login_item.password,
         "notes": login_item.notes,
+        "is_fav": login_item.is_fav,
         "type_id": login_item.type.id if login_item.type else ""
     })
 
@@ -75,6 +81,7 @@ def create_login_api(request):
             login=data["login"],
             password=data["password"],
             notes=data.get("notes", ""),
+            is_fav=data.get("is_fav", False),
             type=login_type
         )
         return JsonResponse({"status": "ok"})
@@ -93,9 +100,13 @@ def update_login_api(request, login_id):
         # Atualiza campos básicos
         login_item.service = data.get("service", login_item.service)
         login_item.login = data.get("login", login_item.login)
-        login_item.notes = data.get("notes", "")
+        login_item.notes = data.get("notes", login_item.notes)
         
-        # Atualiza senha apenas se enviada (já cifrada pelo frontend)
+        # Atualiza favorito
+        if "is_fav" in data:
+            login_item.is_fav = bool(data["is_fav"])
+
+        # Atualiza senha apenas se enviada
         if "password" in data and data["password"]:
             login_item.password = data["password"]
 
