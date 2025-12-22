@@ -65,7 +65,6 @@ def get_login_details_api(request, login_id):
         "id": login_item.id,
         "service": login_item.service,
         "login": login_item.login,
-        "password": login_item.password,
         "notes": login_item.notes,
         "is_fav": login_item.is_fav,
         "type_id": login_item.type.id if login_item.type else ""
