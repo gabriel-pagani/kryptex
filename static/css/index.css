@@ -396,3 +396,22 @@ body::-webkit-scrollbar {
 .favIcon--on {
   color: #fbbf24;
 }
+
+.helpText {
+  margin-top: 10px;
+  font-size: 12px;
+  line-height: 1.35;
+  color: var(--muted);
+}
+
+.helpText--muted {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 10px;
+}
+
+.helpText--muted::before {
+  content: "•";
+  color: rgba(110, 168, 255, 0.9);
+}
