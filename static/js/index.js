@@ -3,6 +3,9 @@
   const SALT = "QrzzRcLpktICK_Gizrts1Y6CyuQ9pHBBweB7DpkLQ6Y";
   const PBKDF2_ITERATIONS = 600000;
 
+  const SECRET_REVEAL_TIMEOUT_MS = 8000;
+  const secretHideTimersById = new Map();
+
   let masterKeyCache = null;
 
   // --- CRYPTO CORE ---
@@ -66,6 +69,28 @@
   }
 
   // --- UI: MODAL DE SENHA MESTRA ---
+
+  function maskSecret(displayEl, toggleBtn) {
+    if (displayEl) displayEl.textContent = "••••••••";
+    if (toggleBtn) {
+      toggleBtn.setAttribute("aria-pressed", "false");
+      toggleBtn.innerHTML = '<i class="fa-regular fa-eye"></i>';
+    }
+  }
+
+  function scheduleMaskSecret(id, displayEl, toggleBtn) {
+    if (!id) return;
+
+    const old = secretHideTimersById.get(String(id));
+    if (old) clearTimeout(old);
+
+    const t = setTimeout(() => {
+      maskSecret(displayEl, toggleBtn);
+      secretHideTimersById.delete(String(id));
+    }, SECRET_REVEAL_TIMEOUT_MS);
+
+    secretHideTimersById.set(String(id), t);
+  }
 
   function askPasswordViaModal() {
     return new Promise((resolve) => {
@@ -215,33 +240,40 @@
     const isPressed = toggleBtn.getAttribute("aria-pressed") === "true";
 
     if (isPressed) {
-      displayEl.textContent = "••••••••";
-      toggleBtn.setAttribute("aria-pressed", "false");
-      toggleBtn.innerHTML = '<i class="fa-regular fa-eye"></i>';
-    } else {
-      const key = await requestMasterPassword();
-      if (!key) return;
-
-      toggleBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i>';
-
-      try {
-        const encryptedStr = await fetchEncryptedData(id);
-        const plainText = await decryptData(encryptedStr, key);
-
-        if (plainText) {
-          displayEl.textContent = plainText;
-          toggleBtn.setAttribute("aria-pressed", "true");
-          toggleBtn.innerHTML = '<i class="fa-regular fa-eye-slash"></i>';
-        } else {
-          masterKeyCache = null;
-          alert("Falha na descriptografia. A chave salva será redefinida.");
-
-          toggleBtn.innerHTML = '<i class="fa-regular fa-eye"></i>';
-        }
-      } catch (e) {
-        setTempIcon(toggleBtn, false);
-        toggleBtn.innerHTML = '<i class="fa-regular fa-eye"></i>';
+      const old = secretHideTimersById.get(String(id));
+      if (old) {
+        clearTimeout(old);
+        secretHideTimersById.delete(String(id));
       }
+
+      maskSecret(displayEl, toggleBtn);
+      return;
+    }
+
+    const key = await requestMasterPassword();
+    if (!key) return;
+
+    toggleBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i>';
+
+    try {
+      const encryptedStr = await fetchEncryptedData(id);
+      const plainText = await decryptData(encryptedStr, key);
+
+      if (plainText) {
+        displayEl.textContent = plainText;
+        toggleBtn.setAttribute("aria-pressed", "true");
+        toggleBtn.innerHTML = '<i class="fa-regular fa-eye-slash"></i>';
+
+        // Auto-hide para reduzir exposição no DOM
+        scheduleMaskSecret(id, displayEl, toggleBtn);
+      } else {
+        masterKeyCache = null;
+        alert("Falha na descriptografia. A chave salva será redefinida.");
+        maskSecret(displayEl, toggleBtn);
+      }
+    } catch (e) {
+      setTempIcon(toggleBtn, false);
+      maskSecret(displayEl, toggleBtn);
     }
   }
 
@@ -438,11 +470,6 @@
     if (editGenerateBtn && editPassInput) {
       editGenerateBtn.addEventListener("click", () => {
         editPassInput.value = generateStrongPassword();
-        // já mostra a senha gerada
-        editPassInput.type = "text";
-        if (toggleVisBtn) {
-          toggleVisBtn.innerHTML = '<i class="fa-regular fa-eye-slash"></i>';
-        }
       });
     }
 
@@ -559,31 +586,24 @@
     btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i>';
 
     try {
-      // 2. Busca os dados completos no backend
+      // Busca os dados básicos
       const resp = await fetch(`/api/login/${id}/details/`);
       if (!resp.ok) throw new Error("Erro ao buscar dados");
       const data = await resp.json();
 
-      // 3. Descriptografa a senha para preencher o formulário
-      const encryptedStr = await fetchEncryptedData(id);
-      const plainPassword = await decryptData(encryptedStr, key);
-      if (plainPassword === null) {
-        alert(
-          "Erro: Não foi possível descriptografar a senha com a chave atual."
-        );
-        btn.innerHTML = '<i class="fa-regular fa-pen-to-square"></i>';
-        return;
-      }
-
-      // 4. Preenche o formulário
+      // Preenche o formulário (sem senha!)
       editForm.querySelector("[name='login_id']").value = data.id;
       editForm.querySelector("[name='service']").value = data.service;
       editForm.querySelector("[name='login']").value = data.login;
       editForm.querySelector("[name='type_id']").value = data.type_id;
       editForm.querySelector("[name='notes']").value = data.notes;
-      editForm.querySelector("[name='password']").value = plainPassword;
 
-      // 5. Abre o modal
+      const passInput = editForm.querySelector("[name='password']");
+      if (passInput) {
+        passInput.value = ""; // não coloca plaintext no DOM
+        passInput.type = "password";
+      }
+
       editModal.showModal();
     } catch (e) {
       alert("Erro ao carregar dados do login.");
