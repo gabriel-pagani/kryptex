@@ -39,6 +39,19 @@ body {
   backdrop-filter: blur(10px);
 }
 
+.topbar__left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.topbar__logo {
+  width: 36px;
+  height: 36px;
+  border-radius: 6px;
+  object-fit: contain;
+}
+
 .brand {
   font-size: 18px;
   font-weight: 700;
