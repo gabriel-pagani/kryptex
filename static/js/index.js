@@ -287,10 +287,38 @@
 
     const openBtn = document.querySelector(".js-open-modal");
 
+    const addPassInput = addForm.querySelector("input[name='password']");
+    const addToggleVisBtn = addForm.querySelector(".js-toggle-pass-visibility-add");
+    const addGenerateBtn = addForm.querySelector(".js-generate-pass");
+
+    function setAddPasswordVisibility(isVisible) {
+      if (!addPassInput || !addToggleVisBtn) return;
+      addPassInput.type = isVisible ? "text" : "password";
+      addToggleVisBtn.innerHTML = isVisible
+        ? '<i class="fa-regular fa-eye-slash"></i>'
+        : '<i class="fa-regular fa-eye"></i>';
+    }
+
+    if (addToggleVisBtn && addPassInput) {
+      addToggleVisBtn.addEventListener("click", () => {
+        setAddPasswordVisibility(addPassInput.type === "password");
+      });
+    }
+
+    if (addGenerateBtn && addPassInput) {
+      addGenerateBtn.addEventListener("click", () => {
+        addPassInput.value = generateStrongPassword();
+        setAddPasswordVisibility(true);
+      });
+    }
+
     if (openBtn) {
       openBtn.addEventListener("click", async () => {
         const key = await requestMasterPassword();
         if (!key) return;
+
+        if (addPassInput) addPassInput.value = "";
+        setAddPasswordVisibility(false);
 
         addModal.showModal();
       });
@@ -305,6 +333,9 @@
       const submitBtn = addForm.querySelector("button[type='submit']");
       const originalText = submitBtn.innerText;
 
+      // respeita validações HTML (required etc.)
+      if (!addForm.reportValidity()) return;
+
       const key = await requestMasterPassword();
       if (!key) return;
 
@@ -314,9 +345,10 @@
       try {
         const formData = new FormData(addForm);
 
-        let password = formData.get("password");
+        const password = String(formData.get("password") || "").trim();
         if (!password) {
-          password = generateStrongPassword();
+          if (addPassInput) addPassInput.focus();
+          return;
         }
 
         const encryptedPass = await encryptData(password, key);
@@ -400,6 +432,20 @@
       });
     }
 
+    // gerar senha no modal de edição
+    const editPassInput = editForm.querySelector("input[name='password']");
+    const editGenerateBtn = editForm.querySelector(".js-generate-pass-edit");
+    if (editGenerateBtn && editPassInput) {
+      editGenerateBtn.addEventListener("click", () => {
+        editPassInput.value = generateStrongPassword();
+        // já mostra a senha gerada
+        editPassInput.type = "text";
+        if (toggleVisBtn) {
+          toggleVisBtn.innerHTML = '<i class="fa-regular fa-eye-slash"></i>';
+        }
+      });
+    }
+
     // --- LÓGICA DE EXCLUSÃO ---
     const deleteBtn = editForm.querySelector(".js-delete-login");
     if (deleteBtn) {
@@ -463,20 +509,17 @@
         const formData = new FormData(editForm);
         const loginId = formData.get("login_id");
 
-        let password = formData.get("password");
-        if (!password) {
-          password = generateStrongPassword();
-        }
-
-        const encryptedPass = await encryptData(password, key);
-
         const payload = {
           service: formData.get("service"),
           type_id: formData.get("type_id"),
           login: formData.get("login"),
-          password: encryptedPass,
           notes: formData.get("notes"),
         };
+
+        const password = String(formData.get("password") || "").trim();
+        if (password) {
+          payload.password = await encryptData(password, key);
+        }
 
         const resp = await fetch(`/api/login/${loginId}/update/`, {
           method: "POST",
