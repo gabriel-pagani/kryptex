@@ -333,3 +333,53 @@ body::-webkit-scrollbar {
   gap: 12px;
   margin-top: 24px;
 }
+
+.btn--mr-8 {
+  margin-right: 8px;
+}
+
+.btn--block {
+  width: 100%;
+}
+
+.btn--danger {
+  background-color: #ef4444;
+  border-color: #ef4444;
+  color: #fff;
+}
+
+.passField {
+  position: relative;
+}
+
+.passField__btn {
+  position: absolute;
+  top: 8px;
+}
+
+.passField__btn--gen {
+  right: 52px;
+}
+
+.passField__btn--toggle {
+  right: 8px;
+}
+
+.modal__content--narrow {
+  width: 400px;
+  max-width: 90vw;
+}
+
+.modal__actions--between {
+  justify-content: space-between;
+  align-items: center;
+}
+
+.modal__actionsRow {
+  display: flex;
+  gap: 12px;
+}
+
+.favIcon--on {
+  color: #fbbf24;
+}

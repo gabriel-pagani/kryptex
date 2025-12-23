@@ -685,11 +685,11 @@
       if (newStatus) {
         icon.classList.remove("fa-regular");
         icon.classList.add("fa-solid");
-        icon.style.color = "#fbbf24"; // Amarelo
+        icon.classList.add("favIcon--on");
       } else {
         icon.classList.remove("fa-solid");
         icon.classList.add("fa-regular");
-        icon.style.color = "";
+        icon.classList.remove("favIcon--on");
       }
 
       try {

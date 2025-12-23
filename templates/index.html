@@ -18,9 +18,8 @@
 
       <div class="topbar__right">
         <button
-          class="btn btn--primary js-open-modal"
+          class="btn btn--primary btn--mr-8 js-open-modal"
           type="button"
-          style="margin-right: 8px"
           title="Cadastrar um Novo Login"
         >
           <i class="fa-solid fa-plus"></i>
@@ -147,9 +146,9 @@
                       title="Favoritar Login"
                     >
                       {% if item.is_fav %}
-                      <i class="fa-solid fa-star" style="color: #fbbf24"></i>
+                      <i class="fa-solid fa-star favIcon favIcon--on"></i>
                       {% else %}
-                      <i class="fa-regular fa-star"></i>
+                      <i class="fa-regular fa-star favIcon"></i>
                       {% endif %}
                     </button>
                   </div>
@@ -196,37 +195,35 @@
             <input type="text" name="login" required autocomplete="off" />
           </div>
 
-            <div class="form__group">
-              <label>Senha</label>
-              <div style="position: relative">
-                <input
-                  type="password"
-                  name="password"
-                  autocomplete="new-password"
-                  required
-                />
+          <div class="form__group">
+            <label>Senha</label>
+            <div class="passField">
+              <input
+                type="password"
+                name="password"
+                autocomplete="new-password"
+                required
+              />
 
-                <button
-                  type="button"
-                  class="btn btn--tiny js-generate-pass"
-                  style="position: absolute; right: 52px; top: 8px"
-                  tabindex="-1"
-                  title="Gerar senha"
-                >
-                  <i class="fa-solid fa-wand-magic-sparkles"></i>
-                </button>
+              <button
+                type="button"
+                class="btn btn--tiny js-generate-pass passField__btn passField__btn--gen"
+                tabindex="-1"
+                title="Gerar senha"
+              >
+                <i class="fa-solid fa-wand-magic-sparkles"></i>
+              </button>
 
-                <button
-                  type="button"
-                  class="btn btn--tiny js-toggle-pass-visibility-add"
-                  style="position: absolute; right: 8px; top: 8px"
-                  tabindex="-1"
-                  title="Exibir/Ocultar senha"
-                >
-                  <i class="fa-regular fa-eye"></i>
-                </button>
-              </div>
+              <button
+                type="button"
+                class="btn btn--tiny js-toggle-pass-visibility-add passField__btn passField__btn--toggle"
+                tabindex="-1"
+                title="Exibir/Ocultar senha"
+              >
+                <i class="fa-regular fa-eye"></i>
+              </button>
             </div>
+          </div>
 
           <div class="form__group">
             <label>Anotações</label>
@@ -242,7 +239,7 @@
     </dialog>
 
     <dialog class="modal" id="masterPasswordModal">
-      <div class="modal__content" style="max-width: 400px">
+      <div class="modal__content modal__content--narrow">
         <div class="modal__header modal__header--center">
           <h3>Desbloquear Cofre</h3>
         </div>
@@ -260,7 +257,7 @@
           </div>
 
           <div class="modal__actions">
-            <button type="submit" class="btn btn--primary" style="width: 100%">
+            <button type="submit" class="btn btn--primary btn--block">
               Desbloquear
             </button>
           </div>
@@ -301,7 +298,7 @@
 
           <div class="form__group">
             <label>Senha</label>
-            <div style="position: relative">
+            <div class="passField">
               <input
                 type="password"
                 name="password"
@@ -311,8 +308,7 @@
 
               <button
                 type="button"
-                class="btn btn--tiny js-generate-pass-edit"
-                style="position: absolute; right: 52px; top: 8px"
+                class="btn btn--tiny js-generate-pass-edit passField__btn passField__btn--gen"
                 tabindex="-1"
                 title="Gerar senha"
               >
@@ -321,8 +317,7 @@
 
               <button
                 type="button"
-                class="btn btn--tiny js-toggle-pass-visibility"
-                style="position: absolute; right: 8px; top: 8px"
+                class="btn btn--tiny js-toggle-pass-visibility passField__btn passField__btn--toggle"
                 tabindex="-1"
                 title="Exibir/Ocultar senha"
               >
@@ -336,20 +331,12 @@
             <textarea name="notes" rows="3"></textarea>
           </div>
 
-          <div class="modal__actions" style="justify-content: space-between">
-            <button
-              type="button"
-              class="btn btn--danger js-delete-login"
-              style="
-                background-color: #ef4444;
-                border-color: #ef4444;
-                color: white;
-              "
-            >
+          <div class="modal__actions modal__actions--between">
+            <button type="button" class="btn btn--danger js-delete-login">
               Excluir
             </button>
 
-            <div style="display: flex; gap: 12px">
+            <div class="modal__actionsRow">
               <button type="button" class="btn js-close-modal">Cancelar</button>
               <button type="submit" class="btn btn--primary">Salvar</button>
             </div>
