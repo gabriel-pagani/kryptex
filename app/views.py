@@ -8,8 +8,8 @@ from django.db.models import Q
 from .models import Logins, LoginTypes
 
 
-# @login_required(login_url="app:login")
-@user_passes_test(lambda u: u.is_active and u.is_staff, login_url="/admin/login/")
+@login_required(login_url="app:login")
+@user_passes_test(lambda u: u.is_active and u.is_staff, login_url="/login/")
 def home_view(request):
     q = (request.GET.get("q") or "").strip()
 
@@ -58,7 +58,7 @@ def home_view(request):
     )
 
 
-# @login_required(login_url="app:login")
+@login_required(login_url="app:login")
 @never_cache
 @user_passes_test(lambda u: u.is_active and u.is_staff)
 def get_login_details_api(request, login_id):
@@ -73,7 +73,7 @@ def get_login_details_api(request, login_id):
     })
 
 
-# @login_required(login_url="app:login")
+@login_required(login_url="app:login")
 @require_POST
 @user_passes_test(lambda u: u.is_active and u.is_staff)
 def create_login_api(request):
@@ -110,7 +110,7 @@ def create_login_api(request):
         return JsonResponse({"status": "error"}, status=500)
 
 
-# @login_required(login_url="app:login")
+@login_required(login_url="app:login")
 @require_POST
 @user_passes_test(lambda u: u.is_active and u.is_staff)
 def update_login_api(request, login_id):
@@ -155,7 +155,7 @@ def update_login_api(request, login_id):
         return JsonResponse({"status": "error"}, status=500)
 
 
-# @login_required(login_url="app:login")
+@login_required(login_url="app:login")
 @require_POST
 @user_passes_test(lambda u: u.is_active and u.is_staff)
 def delete_login_api(request, login_id):
@@ -167,7 +167,7 @@ def delete_login_api(request, login_id):
         return JsonResponse({"status": "error"}, status=500)
 
 
-# @login_required(login_url="app:login")
+@login_required(login_url="app:login")
 @require_POST
 @never_cache
 @user_passes_test(lambda u: u.is_active and u.is_staff)

@@ -4,7 +4,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Kryptex</title>
+    <title>Home | Kryptex</title>
     <link href="{% static 'images/favicon.ico' %}" rel="icon" />
     <link href="{% static 'css/reset.css' %}" rel="stylesheet" />
     <link href="{% static 'css/index.css' %}" rel="stylesheet" />
@@ -33,6 +33,17 @@
         >
           <i class="fa-solid fa-plus"></i>
         </button>
+
+        <form method="post" action="{% url 'app:logout' %}" style="display: inline;">
+          {% csrf_token %}
+          <button
+            class="btn btn--ghost btn--mr-8"
+            type="submit"
+            title="Sair"
+          >
+            <i class="fa-solid fa-right-from-bracket"></i>
+          </button>
+        </form>
 
         {% if user.is_superuser %}
         <a

@@ -108,11 +108,11 @@ STATIC_ROOT = BASE_DIR / 'static_root'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-# LOGIN_URL = 'app:login'
+LOGIN_URL = 'app:login'
 
-# LOGIN_REDIRECT_URL = 'app:home'
+LOGIN_REDIRECT_URL = 'app:home'
 
-# LOGOUT_REDIRECT_URL = 'app:login'
+LOGOUT_REDIRECT_URL = 'app:login'
 
 SESSION_COOKIE_AGE = 60 * 5
 

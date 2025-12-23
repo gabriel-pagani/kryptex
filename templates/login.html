@@ -4,7 +4,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Login • Kryptex</title>
+    <title>Login | Kryptex</title>
 
     <link href="{% static 'images/favicon.ico' %}" rel="icon" />
     <link href="{% static 'css/reset.css' %}" rel="stylesheet" />
@@ -26,13 +26,14 @@
 
     <main class="container">
       <section class="card" style="max-width: 520px; margin: 40px auto;">
-        <div class="card__header">
-          <h2>Entrar</h2>
-          <span class="muted">Acesso restrito</span>
+        <div class="card__header card__header--center">
+          <h2>Acessar Cofre</h2>
         </div>
 
         {% if form.errors %}
-          <p class="hint">Usuário ou senha inválidos.</p>
+          <div class="alert alert--error" role="alert" aria-live="polite">
+            Usuário ou senha inválidos.
+          </div>
         {% endif %}
 
         <form method="post" action="{% url 'app:login' %}" class="form">
@@ -52,8 +53,6 @@
           <div class="modal__actions">
             <button type="submit" class="btn btn--primary btn--block">Entrar</button>
           </div>
-
-          <p class="hint">Use um usuário com permissão <strong>staff</strong> para acessar o cofre.</p>
         </form>
       </section>
     </main>
