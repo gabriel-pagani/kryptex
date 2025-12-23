@@ -116,7 +116,7 @@
 
   function generateStrongPassword(length = 50) {
     const charset =
-      "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&()_+~|}{[]:;?><,./-=";
+      "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789~!?@#$%^&_-+()[]{}></|.,:;";
     const values = new Uint32Array(length);
     window.crypto.getRandomValues(values);
     let password = "";
