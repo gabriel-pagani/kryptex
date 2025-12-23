@@ -2,6 +2,7 @@ import json
 from django.shortcuts import render, get_object_or_404
 from django.contrib.auth.decorators import user_passes_test
 from django.http import JsonResponse, HttpResponseBadRequest
+from django.views.decorators.cache import never_cache
 from django.views.decorators.http import require_POST
 from django.db.models import Q
 from .models import Logins, LoginTypes
@@ -56,6 +57,7 @@ def home_view(request):
     )
 
 
+@never_cache
 @user_passes_test(lambda u: u.is_active and u.is_staff)
 def get_login_details_api(request, login_id):
     login_item = get_object_or_404(Logins, pk=login_id)
@@ -161,6 +163,7 @@ def delete_login_api(request, login_id):
 
 
 @require_POST
+@never_cache
 @user_passes_test(lambda u: u.is_active and u.is_staff)
 def get_password_api(request, login_id):
     login_item = get_object_or_404(Logins, pk=login_id)
