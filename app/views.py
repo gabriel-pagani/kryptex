@@ -6,6 +6,7 @@ from django.views.decorators.cache import never_cache
 from django.views.decorators.http import require_POST
 from django.db.models import Q
 from .models import Logins, LoginTypes
+from django.conf import settings
 
 
 @login_required(login_url="app:login")
@@ -54,7 +55,14 @@ def home_view(request):
     return render(
         request,
         "index.html",
-        {"groups": groups, "q": q, "total_count": total_count, "all_types": all_types},
+        {
+            "groups": groups, 
+            "q": q, 
+            "total_count": total_count, 
+            "all_types": all_types, 
+            "salt": settings.KRYPTEX_SALT,
+            "iterations": settings.KRYPTEX_PBKDF2_ITERATIONS,
+        },
     )
 
 
