@@ -33,7 +33,7 @@
           <i class="fa-solid fa-plus"></i>
         </button>
 
-        <form method="post" action="{% url 'app:logout' %}" style="display: inline;">
+        <form method="post" action="{% url 'app:logout' %}" class="form-logout">
           {% csrf_token %}
           <button
             class="btn btn--ghost btn--mr-8"
@@ -70,9 +70,8 @@
         <button class="btn btn--primary" type="submit">Buscar</button>
 
         <a
-          class="btn btn--ghost js-clear-search"
+          class="btn btn--ghost js-clear-search {% if not q %}is-hidden{% endif %}"
           href="/"
-          style="{% if not q %}display:none{% endif %}"
         >
           Limpar
         </a>
