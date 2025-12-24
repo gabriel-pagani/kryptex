@@ -265,10 +265,6 @@ body::-webkit-scrollbar {
   margin-left: auto;
 }
 
-.loginRow.is-hidden {
-  display: none;
-}
-
 .modal {
   margin: auto;
   background: transparent;
@@ -439,4 +435,17 @@ body::-webkit-scrollbar {
   border-color: rgba(239, 68, 68, 0.45);
   background: rgba(239, 68, 68, 0.12);
   color: #fecaca;
+}
+
+.is-hidden {
+  display: none !important;
+}
+
+.form-logout {
+  display: inline;
+}
+
+.card--login {
+  max-width: 520px;
+  margin: 40px auto;
 }
