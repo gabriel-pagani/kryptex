@@ -69,7 +69,7 @@ def home_view(request):
 @login_required(login_url="app:login")
 @never_cache
 @user_passes_test(lambda u: u.is_active and u.is_staff)
-def get_login_details_api(request, login_id):
+def get_login(request, login_id):
     login_item = get_object_or_404(Logins, pk=login_id)
     return JsonResponse({
         "id": login_item.id,
@@ -84,7 +84,7 @@ def get_login_details_api(request, login_id):
 @login_required(login_url="app:login")
 @require_POST
 @user_passes_test(lambda u: u.is_active and u.is_staff)
-def create_login_api(request):
+def create_login(request):
     try:
         data = json.loads(request.body)
 
@@ -121,7 +121,7 @@ def create_login_api(request):
 @login_required(login_url="app:login")
 @require_POST
 @user_passes_test(lambda u: u.is_active and u.is_staff)
-def update_login_api(request, login_id):
+def update_login(request, login_id):
     login_item = get_object_or_404(Logins, pk=login_id)
 
     try:
@@ -166,7 +166,7 @@ def update_login_api(request, login_id):
 @login_required(login_url="app:login")
 @require_POST
 @user_passes_test(lambda u: u.is_active and u.is_staff)
-def delete_login_api(request, login_id):
+def delete_login(request, login_id):
     login_item = get_object_or_404(Logins, pk=login_id)
     try:
         login_item.delete()
@@ -179,6 +179,6 @@ def delete_login_api(request, login_id):
 @require_POST
 @never_cache
 @user_passes_test(lambda u: u.is_active and u.is_staff)
-def get_password_api(request, login_id):
+def get_password(request, login_id):
     login_item = get_object_or_404(Logins, pk=login_id)
     return JsonResponse({"password": login_item.password})

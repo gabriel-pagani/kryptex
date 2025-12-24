@@ -651,7 +651,7 @@
 
     try {
       // Busca os dados básicos
-      const resp = await fetch(`/api/login/${id}/details/`);
+      const resp = await fetch(`/api/login/${id}/`);
       if (!resp.ok) throw new Error("Erro ao buscar dados");
       const data = await resp.json();
 
