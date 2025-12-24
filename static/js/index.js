@@ -194,9 +194,11 @@
   }
 
   // --- PARTIAL REFRESH (sem recarregar a página / sem perder a chave mestra) ---
-  async function refreshLoginTableFromServer() {
+  async function refreshLoginTableFromServer(url) {
+    const targetUrl = url || window.location.href;
+
     // Busca o HTML da página atual e troca somente a parte da tabela/contadores.
-    const resp = await fetch(window.location.href, {
+    const resp = await fetch(targetUrl, {
       method: "GET",
       headers: {
         "X-Requested-With": "XMLHttpRequest",
@@ -219,6 +221,63 @@
 
     // Reaplica o estado das pastas (folders) no DOM novo
     applyFolderStateToCurrentDom();
+  }
+
+  // --- SEARCH (AJAX) ---
+
+  function buildSearchUrl(q) {
+    const url = new URL(window.location.href);
+    const trimmed = String(q || "").trim();
+
+    if (trimmed) url.searchParams.set("q", trimmed);
+    else url.searchParams.delete("q");
+
+    return url;
+  }
+
+  function setClearSearchVisible(visible) {
+    const clear = document.querySelector(".js-clear-search");
+    if (!clear) return;
+    clear.style.display = visible ? "" : "none";
+  }
+
+  async function performSearch(q, { pushState = true } = {}) {
+    const url = buildSearchUrl(q);
+
+    if (pushState) {
+      window.history.pushState({}, "", url.toString());
+    }
+
+    setClearSearchVisible(!!url.searchParams.get("q"));
+    await refreshLoginTableFromServer(url.toString());
+  }
+
+  function setupSearchAjax() {
+    const form = document.querySelector("form.search");
+    if (!form) return;
+
+    const input = form.querySelector("input[name='q']");
+    const clear = document.querySelector(".js-clear-search");
+
+    form.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      await performSearch(input ? input.value : "", { pushState: true });
+    });
+
+    if (clear) {
+      clear.addEventListener("click", async (e) => {
+        e.preventDefault();
+        if (input) input.value = "";
+        await performSearch("", { pushState: true });
+      });
+    }
+
+    window.addEventListener("popstate", async () => {
+      const qNow = new URLSearchParams(window.location.search).get("q") || "";
+      if (input) input.value = qNow;
+      setClearSearchVisible(!!qNow);
+      await refreshLoginTableFromServer(window.location.href);
+    });
   }
 
   // --- ACTIONS ---
@@ -684,6 +743,7 @@
 
   setupAddModal();
   setupEditModal();
+  setupSearchAjax();
 
   document.addEventListener("click", async (ev) => {
     if (ev.target.closest(".js-folder")) {

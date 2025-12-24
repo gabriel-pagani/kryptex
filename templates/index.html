@@ -69,9 +69,14 @@
           autocomplete="off"
         />
         <button class="btn btn--primary" type="submit">Buscar</button>
-        {% if q %}
-        <a class="btn btn--ghost" href="/">Limpar</a>
-        {% endif %}
+
+        <a
+          class="btn btn--ghost js-clear-search"
+          href="/"
+          style="{% if not q %}display:none{% endif %}"
+        >
+          Limpar
+        </a>
       </form>
 
       <section class="card">
