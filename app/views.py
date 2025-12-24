@@ -7,6 +7,7 @@ from django.views.decorators.http import require_POST
 from django.db.models import Q
 from .models import Logins, LoginTypes
 from django.conf import settings
+from django_ratelimit.decorators import ratelimit
 
 
 @login_required(login_url="app:login")
@@ -175,6 +176,7 @@ def delete_login(request, login_id):
         return JsonResponse({"status": "error"}, status=500)
 
 
+@ratelimit(key='user_or_ip', rate='15/m', method=ratelimit.ALL)
 @login_required(login_url="app:login")
 @require_POST
 @never_cache
