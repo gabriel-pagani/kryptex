@@ -1,7 +1,12 @@
 (function () {
+  function readMeta(name) {
+    const el = document.querySelector(`meta[name="${name}"]`);
+    return el ? el.getAttribute("content") : null;
+  }  
+  
   const FOLDER_STATE_KEY = "kryptex.folderState.v1";
-  const SALT = "QrzzRcLpktICK_Gizrts1Y6CyuQ9pHBBweB7DpkLQ6Y";
-  const PBKDF2_ITERATIONS = 600000;
+  const SALT = readMeta("salt");
+  const PBKDF2_ITERATIONS = readMeta("iterations");
 
   const SECRET_REVEAL_TIMEOUT_MS = 8000;
   const secretHideTimersById = new Map();
