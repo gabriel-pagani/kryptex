@@ -16,6 +16,9 @@ generate-certs:
 create-superuser:
 	@docker compose exec app python manage.py shell -c "from django.contrib.auth.models import User; User.objects.filter(username='admin').exists() or User.objects.create_superuser(username='admin', password='1234')"
 
+backup-database:
+	@mkdir -p backup && cp database/db.sqlite3 backup/db_$(shell date +%Y%m%d_%H%M%S).sqlite3
+
 container-terminal:
 	@docker compose exec app sh
 
