@@ -17,7 +17,7 @@ class SecurityHeadersMiddleware:
             "manifest-src 'self'; "
             "img-src 'self' data:; "
             "font-src 'self' data:; "
-            "style-src 'self' 'unsafe-inline'; "
+            "style-src 'self'; "
             "script-src 'self'; "
             "connect-src 'self'; "
             "script-src-attr 'none'; "
