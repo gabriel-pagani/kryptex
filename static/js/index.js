@@ -171,6 +171,12 @@
     return cookieValue;
   }
 
+  function getCsrfToken() {
+    const input = document.querySelector('input[name="csrfmiddlewaretoken"]');
+    if (input && input.value) return input.value;
+    return getCookie("csrftoken");
+  }
+
   async function copyText(text) {
     if (!text) return false;
     try {
@@ -290,7 +296,8 @@
   async function fetchEncryptedData(id) {
     const resp = await fetch(`/api/password/${id}/`, {
       method: "POST",
-      headers: { "X-CSRFToken": getCookie("csrftoken") },
+      credentials: "same-origin",
+      headers: { "X-CSRFToken": getCsrfToken() },
     });
     if (!resp.ok) throw new Error("Erro de rede");
     const data = await resp.json();
@@ -459,9 +466,10 @@
 
         const resp = await fetch("/api/login/create/", {
           method: "POST",
+          credentials: "same-origin",
           headers: {
             "Content-Type": "application/json",
-            "X-CSRFToken": getCookie("csrftoken"),
+            "X-CSRFToken": getCsrfToken(),
           },
           body: JSON.stringify(payload),
         });
@@ -564,8 +572,9 @@
         try {
           const resp = await fetch(`/api/login/${loginId}/delete/`, {
             method: "POST",
+            credentials: "same-origin",
             headers: {
-              "X-CSRFToken": getCookie("csrftoken"),
+              "X-CSRFToken": getCsrfToken(),
             },
           });
 
@@ -614,9 +623,10 @@
 
         const resp = await fetch(`/api/login/${loginId}/update/`, {
           method: "POST",
+          credentials: "same-origin",
           headers: {
             "Content-Type": "application/json",
-            "X-CSRFToken": getCookie("csrftoken"),
+            "X-CSRFToken": getCsrfToken(),
           },
           body: JSON.stringify(payload),
         });
@@ -781,9 +791,10 @@
         // Envia apenas o campo is_fav
         const resp = await fetch(`/api/login/${id}/update/`, {
           method: "POST",
+          credentials: "same-origin",
           headers: {
             "Content-Type": "application/json",
-            "X-CSRFToken": getCookie("csrftoken"),
+            "X-CSRFToken": getCsrfToken(),
           },
           body: JSON.stringify({ is_fav: newStatus }),
         });
