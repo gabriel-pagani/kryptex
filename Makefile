@@ -31,6 +31,21 @@ backup-database:
 		exit 1; \
 	fi
 
+list-backups:
+	@echo "Backups disponíveis:"
+	@echo "=========================================================="
+	@if ls backup/*.db.enc 1> /dev/null 2>&1; then \
+		for f in backup/*.db.enc; do \
+			epoch=$$(stat -c '%Y' "$$f"); \
+			dt=$$(date -d "@$$epoch" '+%d/%m/%Y %H:%M:%S'); \
+			size_bytes=$$(stat -c '%s' "$$f"); \
+			size_h=$$(numfmt --to=iec --suffix=B $$size_bytes); \
+			printf "%s\t%s\t%s\t%s\n" "$$epoch" "$$(basename "$$f")" "$$size_h" "$$dt"; \
+		done | sort -nr | awk -F'\t' '{print $$2 " | " $$3 " | " $$4}'; \
+	else \
+		echo "Nenhum backup disponível!"; \
+	fi
+
 container-terminal:
 	@docker compose exec app sh
 
