@@ -11,7 +11,7 @@ from django_ratelimit.decorators import ratelimit
 
 
 @login_required(login_url="app:login")
-@user_passes_test(lambda u: u.is_active and u.is_staff, login_url="/login/")
+@user_passes_test(lambda u: u.is_active and u.is_staff, login_url="app:login")
 def home_view(request):
     q = (request.GET.get("q") or "").strip()
 
@@ -68,8 +68,9 @@ def home_view(request):
 
 
 @login_required(login_url="app:login")
+@user_passes_test(lambda u: u.is_active and u.is_staff, login_url="app:login")
 @never_cache
-@user_passes_test(lambda u: u.is_active and u.is_staff)
+@ratelimit(key="user_or_ip", rate="15/m", method=ratelimit.ALL, block=True)
 def get_login(request, login_id):
     login_item = get_object_or_404(Logins, pk=login_id)
     return JsonResponse({
@@ -83,8 +84,9 @@ def get_login(request, login_id):
 
 
 @login_required(login_url="app:login")
+@user_passes_test(lambda u: u.is_active and u.is_staff, login_url="app:login")
 @require_POST
-@user_passes_test(lambda u: u.is_active and u.is_staff)
+@ratelimit(key="user_or_ip", rate="15/m", method=ratelimit.ALL, block=True)
 def create_login(request):
     try:
         data = json.loads(request.body)
@@ -120,8 +122,9 @@ def create_login(request):
 
 
 @login_required(login_url="app:login")
+@user_passes_test(lambda u: u.is_active and u.is_staff, login_url="app:login")
 @require_POST
-@user_passes_test(lambda u: u.is_active and u.is_staff)
+@ratelimit(key="user_or_ip", rate="15/m", method=ratelimit.ALL, block=True)
 def update_login(request, login_id):
     login_item = get_object_or_404(Logins, pk=login_id)
 
@@ -165,8 +168,9 @@ def update_login(request, login_id):
 
 
 @login_required(login_url="app:login")
+@user_passes_test(lambda u: u.is_active and u.is_staff, login_url="app:login")
 @require_POST
-@user_passes_test(lambda u: u.is_active and u.is_staff)
+@ratelimit(key="user_or_ip", rate="15/m", method=ratelimit.ALL, block=True)
 def delete_login(request, login_id):
     login_item = get_object_or_404(Logins, pk=login_id)
     try:
@@ -176,11 +180,11 @@ def delete_login(request, login_id):
         return JsonResponse({"status": "error"}, status=500)
 
 
-@ratelimit(key='user_or_ip', rate='15/m', method=ratelimit.ALL)
 @login_required(login_url="app:login")
+@user_passes_test(lambda u: u.is_active and u.is_staff, login_url="app:login")
 @require_POST
 @never_cache
-@user_passes_test(lambda u: u.is_active and u.is_staff)
+@ratelimit(key="user_or_ip", rate="15/m", method=ratelimit.ALL, block=True)
 def get_password(request, login_id):
     login_item = get_object_or_404(Logins, pk=login_id)
     return JsonResponse({"password": login_item.password})
