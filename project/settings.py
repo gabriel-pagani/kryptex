@@ -17,7 +17,7 @@ CSRF_TRUSTED_ORIGINS = os.getenv('CSRF_TRUSTED_ORIGINS', 'https://localhost').sp
 
 KRYPTEX_SALT = os.getenv('KRYPTEX_SALT')
 
-KRYPTEX_PBKDF2_ITERATIONS = int(os.getenv('KRYPTEX_PBKDF2_ITERATIONS'))
+KRYPTEX_PBKDF2_ITERATIONS = int(os.getenv('KRYPTEX_PBKDF2_ITERATIONS', '600000'))
 
 INSTALLED_APPS = [
     'django.contrib.admin',
