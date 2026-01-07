@@ -1,11 +1,11 @@
 [project]
-name = "streaming"
+name = "none"
 version = "0.1.0"
 description = ""
 readme = "README.md"
 requires-python = ">=3.10"
 authors = [
-    { name = "Flet developer", email = "you@example.com" }
+    { name = "gabriel-pagani", email = "gabrielpaganidesouza@gmail.com" }
 ]
 dependencies = [
   "flet>=0.80.1"
@@ -17,10 +17,10 @@ dev = [
 ]
 
 [tool.flet]
-org = "com.mycompany"
-product = "streaming"
-company = "Flet"
-copyright = "Copyright (C) 2026 by Flet"
+org = "com.none"
+product = "none"
+company = "None"
+copyright = "Copyright (C) 2026 by None"
 
 [tool.flet.app]
 path = "src"
