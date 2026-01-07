@@ -77,6 +77,24 @@ def create_tables():
                 CURRENT_TIMESTAMP
             );
         END;
+                    
+        CREATE TRIGGER IF NOT EXISTS trg_passwords_history_on_delete
+        BEFORE DELETE ON passwords
+        FOR EACH ROW
+        BEGIN
+            INSERT INTO password_history (
+                password_id,
+                iv,
+                password_encrypted,
+                changed_at
+            )
+            VALUES (
+                OLD.id,
+                OLD.iv,
+                OLD.password_encrypted,
+                CURRENT_TIMESTAMP
+            );
+        END;    
         """)
 
 
