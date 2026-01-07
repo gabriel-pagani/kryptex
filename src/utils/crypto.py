@@ -19,8 +19,8 @@ def generate_hash(password: str) -> str:
     return password_hasher.hash(password + PEPPER)
 
 
-def verify_hash(hashed_password: str, password: str) -> bool:
+def verify_hash(password_hash: str, password: str) -> bool:
     try:
-        return password_hasher.verify(hashed_password, password + PEPPER)
+        return password_hasher.verify(password_hash, password + PEPPER)
     except Exception as e:
         return False
