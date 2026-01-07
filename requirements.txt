@@ -1,9 +1,12 @@
 annotated-doc==0.0.4
 annotated-types==0.7.0
 anyio==4.12.1
+argon2-cffi==25.1.0
+argon2-cffi-bindings==25.1.0
 arrow==1.4.0
 binaryornot==0.4.4
 certifi==2026.1.4
+cffi==2.0.0
 chardet==5.2.0
 charset-normalizer==3.4.4
 click==8.3.1
@@ -26,6 +29,7 @@ mdurl==0.1.2
 msgpack==1.1.2
 oauthlib==3.3.1
 packaging==25.0
+pycparser==2.23
 pydantic==2.12.5
 pydantic_core==2.41.5
 Pygments==2.19.2
