@@ -39,8 +39,12 @@ def create_tables():
         CREATE TABLE IF NOT EXISTS password_history (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             password_id INTEGER,
+            service TEXT NOT NULL,
+            login TEXT,
             iv BLOB NOT NULL,
             password_encrypted BLOB NOT NULL,
+            url TEXT,
+            notes TEXT,
             changed_at DATETIME DEFAULT CURRENT_TIMESTAMP,
 
             FOREIGN KEY (password_id) REFERENCES passwords(id) ON DELETE SET NULL
@@ -59,42 +63,58 @@ def create_tables():
             SET updated_at = CURRENT_TIMESTAMP
             WHERE id = NEW.id;
         END;
-                             
+
         CREATE TRIGGER IF NOT EXISTS trg_passwords_history
         BEFORE UPDATE OF password_encrypted ON passwords
         FOR EACH ROW
         BEGIN
             INSERT INTO password_history (
                 password_id,
+                service,
+                login,
                 iv,
                 password_encrypted,
+                url,
+                notes,
                 changed_at
             )
             VALUES (
                 OLD.id,
+                OLD.service,
+                OLD.login,
                 OLD.iv,
                 OLD.password_encrypted,
+                OLD.url,
+                OLD.notes,
                 CURRENT_TIMESTAMP
             );
         END;
-                    
+
         CREATE TRIGGER IF NOT EXISTS trg_passwords_history_on_delete
         BEFORE DELETE ON passwords
         FOR EACH ROW
         BEGIN
             INSERT INTO password_history (
                 password_id,
+                service,
+                login,
                 iv,
                 password_encrypted,
+                url,
+                notes,
                 changed_at
             )
             VALUES (
                 OLD.id,
+                OLD.service,
+                OLD.login,
                 OLD.iv,
                 OLD.password_encrypted,
+                OLD.url,
+                OLD.notes,
                 CURRENT_TIMESTAMP
             );
-        END;    
+        END;
         """)
 
 
