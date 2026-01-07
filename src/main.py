@@ -5,4 +5,4 @@ def main(page: ft.Page):
     None
 
 
-ft.run(main)
+ft.run(main, assets_dir="assets")
