@@ -5,7 +5,7 @@ from utils.crypto import generate_hash, verify_hash
 
 
 class User:
-    def __init__(self, username: str, id: int, salt: bytes, master_password_hash: str):
+    def __init__(self, id: int, salt: bytes, username: str,  master_password_hash: str):
         self.id = id
         self.salt = salt
         self.username = username
