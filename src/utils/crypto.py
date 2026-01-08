@@ -10,9 +10,9 @@ if PEPPER == "":
     raise RuntimeError("CRITICAL ERROR: The environment variable 'PEPPER' is not defined.")
 
 password_hasher = PasswordHasher(
-    time_cost=3,
-    memory_cost=65536,
-    parallelism=2,
+    time_cost=12,
+    memory_cost=262144,
+    parallelism=12,
     hash_len=32,
     salt_len=32
 )
