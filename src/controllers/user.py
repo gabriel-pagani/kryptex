@@ -1,7 +1,7 @@
 from typing import Optional
 from os import urandom
 from database.connection import execute_query
-from utils.crypto import generate_hash, verify_hash
+from utils.cryptor import generate_hash, verify_hash
 
 
 class User:
