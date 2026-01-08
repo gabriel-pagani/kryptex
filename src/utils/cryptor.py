@@ -56,4 +56,4 @@ def decrypt_password(derived_master_password: bytes, iv: bytes, encrypted_passwo
         decrypted_password = aesgcm.decrypt(iv, encrypted_password, associated_data).decode()
         return decrypted_password
     except InvalidTag:
-        raise ValueError("Invalid key or Corrupted data")
+        raise ValueError("Invalid key or Corrupted data.")
