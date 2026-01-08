@@ -2,13 +2,14 @@ from dotenv import load_dotenv
 import os
 from argon2 import PasswordHasher, low_level
 from cryptography.hazmat.primitives.ciphers.aead import AESGCM
+from cryptography.exceptions import InvalidTag
 
 load_dotenv()
 
 PEPPER = os.getenv("PEPPER", "")
 
 if PEPPER == "":
-    raise RuntimeError("error-on-crypto: PEPPER is missing.")
+    raise RuntimeError("PEPPER is missing.")
 
 password_hasher = PasswordHasher(
     time_cost=12,
@@ -42,18 +43,17 @@ def derive_master_password(master_password: str, salt: bytes) -> bytes:
     )
 
 
-def encrypt_password(master_password: str, salt: bytes, password: str) -> tuple[bytes, bytes]:
-    aesgcm = AESGCM(derive_master_password(master_password, salt))
+def encrypt_password(derived_master_password: bytes, password: str) -> tuple[bytes, bytes]:
+    aesgcm = AESGCM(derived_master_password)
     iv = os.urandom(12)
-    password_encrypted = aesgcm.encrypt(iv, password.encode(), None)
-    return (iv, password_encrypted)
+    encrypted_password = aesgcm.encrypt(iv, password.encode(), None)
+    return (iv, encrypted_password)
 
 
-def decrypt_password(master_password: str, salt: bytes, iv: bytes, password_encrypted: bytes) -> str:
+def decrypt_password(derived_master_password: bytes, iv: bytes, encrypted_password: bytes) -> str:
     try:
-        aesgcm = AESGCM(derive_master_password(master_password, salt))
-        password_decrypted = aesgcm.decrypt(iv, password_encrypted, None).decode()
-        return password_decrypted
-    except Exception as e:
-        print(f"exception-on-crypto: {e}")
-        return ""
+        aesgcm = AESGCM(derived_master_password)
+        decrypted_password = aesgcm.decrypt(iv, encrypted_password, None).decode()
+        return decrypted_password
+    except InvalidTag:
+        raise ValueError("Invalid key or Corrupted data")
