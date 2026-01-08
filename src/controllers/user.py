@@ -1,7 +1,7 @@
 from typing import Optional
 from os import urandom
 from database.connection import execute_query
-from utils.crypto import generate_hash
+from utils.crypto import generate_hash, verify_hash
 
 
 class User:
@@ -59,3 +59,9 @@ class User:
         except Exception as e:
             print(f"exception-on-delete: {e}")
             return False
+        
+    def check_master_password(self, master_password: str) -> bool:
+        if not self.master_password_hash:
+            return False
+            
+        return verify_hash(self.master_password_hash, master_password)
