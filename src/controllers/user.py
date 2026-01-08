@@ -1,3 +1,4 @@
+from typing import Optional
 from os import urandom
 from database.connection import execute_query
 from utils.crypto import generate_hash
@@ -23,6 +24,20 @@ class User:
 
         except Exception as e:
             print(f"exception-on-create: {e}")
+
+    @classmethod
+    def get(cls, username: str) -> Optional['User']:
+        try:
+            response = execute_query(
+                "SELECT id, salt, username, master_password_hash FROM users WHERE username = ?",
+                (username,)
+            )
+            
+            if response != []:
+                return cls(id=response[0][0], salt=response[0][1], username=response[0][2], master_password_hash=response[0][3])
+
+        except Exception as e:
+            print(f"exception-on-read: {e}")
 
     def delete(self) -> None:
         try:
