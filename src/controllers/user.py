@@ -62,6 +62,24 @@ class User:
             print(f"exception-on-get: {e}")
             return None
 
+    def update(self, username: str) -> bool:
+        try:
+            if not self.id:
+                return False
+
+            execute_query(
+                f"UPDATE users SET username = ? WHERE id = ?", 
+                (username, self.id)
+            )
+            
+            self.username = username if username else self.name
+
+            return True
+
+        except Exception as e:
+            print(f"exception-on-update: {e}")
+            return False
+
     def delete(self) -> bool:
         try:
             if not self.id:
