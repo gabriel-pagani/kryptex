@@ -97,8 +97,8 @@ class User:
             )
 
             if verify_hash(user.master_password_hash, master_password):
-                derived_key = derive_master_password(master_password, user.salt)
-                return user, derived_key
+                user_key = derive_master_password(master_password, user.salt)
+                return user, user_key
             
             return None, None
 
