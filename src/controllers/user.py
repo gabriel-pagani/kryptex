@@ -1,7 +1,7 @@
 from os import urandom
 from typing import Optional, Tuple
-from database.connection import execute_query
-from utils.cryptor import generate_hash, verify_hash, derive_master_password
+from database.connection import execute_query, get_connection
+from utils.cryptor import generate_hash, verify_hash, derive_master_password, encrypt_password, decrypt_password
 
 
 class User:
@@ -62,23 +62,82 @@ class User:
             print(f"exception-on-get: {e}")
             return None
 
-    def update(self, username: str) -> bool:
+    def update(self, current_master_password: str, new_username: Optional[str] = None, new_master_password: Optional[str] = None) -> bool:
+        if not verify_hash(self.master_password_hash, current_master_password):
+            return False
+
+        if not new_username and not new_master_password:
+            return False
+
+        # Usa conexão direta para garantir transação atômica (Rollback em caso de erro)
+        conn = get_connection()
         try:
-            if not self.id:
-                return False
-
-            execute_query(
-                f"UPDATE users SET username = ? WHERE id = ?", 
-                (username, self.id)
-            )
+            cursor = conn.cursor()
             
-            self.username = username if username else self.name
+            # Lógica de Rotação de Credenciais
+            if new_master_password:
+                # Deriva a chave ANTIGA para descriptografar os dados atuais
+                old_key = derive_master_password(current_master_password, self.salt)
+                
+                # Gerar novos parâmetros de segurança
+                new_salt = urandom(32)
+                new_key = derive_master_password(new_master_password, new_salt)
+                new_hash = generate_hash(new_master_password)
+                
+                # Busca todas as senhas do usuário
+                cursor.execute(
+                    "SELECT id, iv, encrypted_password FROM passwords WHERE user_id = ?", 
+                    (self.id,)
+                )
+                passwords = cursor.fetchall()
 
+                associated_data = f'user_id:{self.id};'.encode()
+
+                # Loop de Migração: Descriptografar (Velha) -> Criptografar (Nova)
+                for password_id, iv, encrypted_password in passwords:
+                    try:
+                        # Descriptografa com chave antiga
+                        decrypted_password = decrypt_password(old_key, iv, encrypted_password, associated_data)
+                        
+                        # Criptografa com chave nova
+                        new_iv, new_encrypted_password = encrypt_password(new_key, decrypted_password, associated_data)
+                        
+                        # Atualiza no banco
+                        cursor.execute(
+                            "UPDATE passwords SET iv = ?, encrypted_password = ? WHERE id = ?",
+                            (new_iv, new_encrypted_password, password_id)
+                        )
+                    except Exception as e:
+                        raise Exception(f"Failed to migrate password (ID={password_id}): {e}")
+
+                # Atualiza os dados do usuário com a nova hash e salt
+                cursor.execute(
+                    "UPDATE users SET salt = ?, master_password_hash = ? WHERE id = ?",
+                    (new_salt, new_hash, self.id)
+                )
+                
+                # Atualiza o estado do objeto atual
+                self.salt = new_salt
+                self.master_password_hash = new_hash
+
+            # Lógica de Atualização de Username
+            if new_username:
+                cursor.execute(
+                    "UPDATE users SET username = ? WHERE id = ?", 
+                    (new_username, self.id)
+                )
+                self.username = new_username
+
+            # Se chegamos até aqui sem erro, salva tudo
+            conn.commit()
             return True
 
         except Exception as e:
             print(f"exception-on-update: {e}")
+            conn.rollback() # Desfaz todas as alterações se algo der errado
             return False
+        finally:
+            conn.close()
 
     def delete(self) -> bool:
         try:
