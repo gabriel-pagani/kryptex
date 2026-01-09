@@ -61,3 +61,19 @@ class User:
         except Exception as e:
             print(f"exception-on-get: {e}")
             return None
+
+    def delete(self) -> bool:
+        try:
+            if not self.id:
+                return False
+            
+            execute_query(
+                "DELETE FROM users WHERE id = ?",
+                (self.id,)
+            )
+            
+            return True
+
+        except Exception as e:
+            print(f"exception-on-delete: {e}")
+            return False
