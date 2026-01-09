@@ -6,11 +6,6 @@ from cryptography.exceptions import InvalidTag
 
 load_dotenv()
 
-PEPPER = os.getenv("PEPPER", "")
-
-if not PEPPER:
-    raise RuntimeError("PEPPER is missing.")
-
 password_hasher = PasswordHasher(
     time_cost=12,
     memory_cost=262144,
@@ -21,19 +16,19 @@ password_hasher = PasswordHasher(
 
 
 def generate_hash(master_password: str) -> str:
-    return password_hasher.hash(master_password + PEPPER)
+    return password_hasher.hash(master_password)
 
 
 def verify_hash(master_password_hash: str, master_password: str) -> bool:
     try:
-        return password_hasher.verify(master_password_hash, master_password + PEPPER)
+        return password_hasher.verify(master_password_hash, master_password)
     except Exception as e:
         return False
 
 
 def derive_master_password(master_password: str, salt: bytes) -> bytes:
     return low_level.hash_secret_raw(
-        secret=(master_password + PEPPER).encode(),
+        secret=(master_password).encode(),
         salt=salt,
         time_cost=12,
         memory_cost=262144,
