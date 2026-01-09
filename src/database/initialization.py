@@ -69,7 +69,7 @@ def create_tables():
         END;
 
         CREATE TRIGGER IF NOT EXISTS trg_passwords_history
-        BEFORE UPDATE OF encrypted_password ON passwords
+        BEFORE UPDATE OF service, login, iv, encrypted_password, notes ON passwords
         FOR EACH ROW
         BEGIN
             INSERT INTO password_history (
