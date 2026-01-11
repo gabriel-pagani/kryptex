@@ -45,7 +45,7 @@ class User:
             return None, 3, f"An unexpected error occurred. Please try creating your account again later."
 
     @classmethod
-    def login(cls, username: str, master_password: str) -> Tuple[Optional['User'], Optional[bytes]]:
+    def login(cls, username: str, master_password: str) -> Tuple[Optional['User'], Optional[bytes], Optional[int], Optional[str]]:
         try:
             response = execute_query(
                 "SELECT * FROM users WHERE username = ?",
@@ -53,7 +53,7 @@ class User:
             )
 
             if not response:
-                return None, None
+                return None, None, 2, "Invalid username and/or master password."
 
             user = cls(
                 id=response[0][0], 
@@ -64,13 +64,13 @@ class User:
 
             if verify_hash(user.master_password_hash, master_password):
                 user_key = derive_master_password(master_password, user.salt)
-                return user, user_key
-            
-            return None, None
+                return user, user_key, 1, "Login successful."
+            else:
+                return None, None, 2, "Invalid username and/or master password."
 
         except Exception as e:
             print(f"exception-on-login: {e}")
-            return None, None
+            return None, None, 3, "An unexpected error occurred. Please try logging in again later."
 
     def update(self, current_master_password: str, new_username: Optional[str] = None, new_master_password: Optional[str] = None) -> bool:
         if not verify_hash(self.master_password_hash, current_master_password):
