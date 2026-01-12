@@ -64,6 +64,7 @@ class App:
                     self.user = user
                     self.user_key = user_key
                     self.page.clean()
+                    self.show_home_view()
                     self.show_message(msg_type, msg)
 
                 else:
@@ -274,4 +275,8 @@ class App:
         self.page.add(container)
 
     def show_home_view(self):
+        async def copy_to_clipboard():
+            await ft.Clipboard().set('Test')
+            self.show_message(1, "Text copied to clipboard!")
+        
         ...
