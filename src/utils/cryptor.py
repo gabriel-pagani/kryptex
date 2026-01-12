@@ -1,10 +1,8 @@
-from dotenv import load_dotenv
 import os, secrets
 from argon2 import PasswordHasher, low_level
 from cryptography.hazmat.primitives.ciphers.aead import AESGCM
 from cryptography.exceptions import InvalidTag
 
-load_dotenv()
 
 password_hasher = PasswordHasher(
     time_cost=12,
