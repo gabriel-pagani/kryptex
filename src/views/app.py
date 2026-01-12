@@ -300,6 +300,15 @@ class App:
                 ft.PopupMenuItem(
                     content=ft.Row(
                         [
+                            ft.Icon(ft.Icons.ADD, ft.Colors.BLACK),
+                            ft.Text("New password"),
+                        ]
+                    ),
+                    on_click=...,
+                ),                
+                ft.PopupMenuItem(
+                    content=ft.Row(
+                        [
                             ft.Icon(ft.Icons.LOGOUT, ft.Colors.BLACK),
                             ft.Text("Logout"),
                         ]
@@ -319,13 +328,13 @@ class App:
                     size=30,
                     weight=ft.FontWeight.W_500,
                 ),
-                padding=ft.padding.only(left=16),
+                padding=ft.Padding.only(left=16),
             ),
             center_title=False,
             color=ft.Colors.WHITE,
             bgcolor=ft.Colors.BLUE_900,
             actions=[
-                ft.Container(popup_menu, padding=ft.padding.only(right=16)),
+                ft.Container(popup_menu, padding=ft.Padding.only(right=16)),
             ],
         )
 
