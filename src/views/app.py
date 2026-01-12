@@ -281,8 +281,8 @@ class App:
         self.page.add(container)
 
     def show_home_view(self):
-        async def copy_to_clipboard():
-            await ft.Clipboard().set(...)
+        async def copy_to_clipboard(e, text: str):
+            await ft.Clipboard().set(text)
             self.show_message(1, "Text copied to clipboard!")
 
             await asyncio.sleep(15)
