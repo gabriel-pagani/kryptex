@@ -49,7 +49,7 @@ class App:
             master_password_confirmed_input.visible = False
         self.page.update()
 
-    def show_login_view(self) -> None:
+    def show_login_view(self):
         def login(e):
             username = username_input.value
             master_password = master_password_input.value
@@ -150,7 +150,7 @@ class App:
 
         self.page.add(container)
 
-    def show_register_view(self) -> None:
+    def show_register_view(self):
         def register(e):
             username = username_input.value
             master_password = master_password_input.value
@@ -272,3 +272,6 @@ class App:
         )
 
         self.page.add(container)
+
+    def show_home_view(self):
+        ...
