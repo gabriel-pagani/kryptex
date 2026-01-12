@@ -1,6 +1,8 @@
 import flet as ft
 import asyncio
 from controllers.user import User
+from controllers.password import Password
+from controllers.password_type import PasswordType
 from utils.validator import validate_master_password
 
 
