@@ -37,6 +37,7 @@ def create_tables(conn: sqlite3.Connection):
             encrypted_password BLOB NOT NULL,
             url TEXT,
             notes TEXT,
+            favorited BOOLEAN DEFAULT FALSE,
             created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
             updated_at DATETIME,
             deleted_at DATETIME,
