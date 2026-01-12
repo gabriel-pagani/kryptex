@@ -3,7 +3,7 @@ from controllers.user import User
 from utils.validator import validate_master_password
 
 
-class Login:
+class App:
     def __init__(self, page: ft.Page):
         self.page = page
         self.user = None

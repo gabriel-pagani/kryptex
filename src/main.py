@@ -1,9 +1,9 @@
 import flet as ft
-from pages.login import Login
+from pages.login import App
 
 
 def main(page: ft.Page):
-    Login(page)
+    App(page)
 
 
 ft.run(main, assets_dir="assets")
