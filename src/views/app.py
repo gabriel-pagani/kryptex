@@ -360,7 +360,7 @@ class App:
                 expansion_tiles_controls.append(
                     ft.ExpansionTile(
                         title=ft.Text(password_type, weight=ft.FontWeight.BOLD),
-                        subtitle=ft.Text(f"{len(tile_controls)} Item(s)", style=ft.TextStyle(italic=True)),
+                        subtitle=ft.Text(f"{len(tile_controls)} item(s)", style=ft.TextStyle(italic=True)),
                         affinity=ft.TileAffinity.PLATFORM,
                         maintain_state=True,
                         shape=ft.RoundedRectangleBorder(
