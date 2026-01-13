@@ -306,19 +306,37 @@ class App:
             self.page.clean()
             self.show_login_view()
 
-        def build_expansion_tiles_controls(query: str = None) -> list[ft.Control]:
+        def build_expansion_tiles_controls(filter: str = None) -> list[ft.Control]:
+            # Filter
+            if filter:
+                filter = filter.lower()
+                filtered_passwords = [
+                    password for password in self.passwords
+                    if any(
+                        filter in (field or "").lower()
+                        for field in (
+                            password.service,
+                            password.login,
+                            password.url,
+                            password.notes,
+                        )
+                    )
+                ]
+            else:
+                filtered_passwords = self.passwords
+            
             # Groups passwords by type
             passwords_by_type = dict()
             for type in self.password_types:
                 temp_passwords_by_type = list()
-                for password in self.passwords:
+                for password in filtered_passwords:
                     if password.type_id == type.id:
                         temp_passwords_by_type.append(password)
                         
                 passwords_by_type[type.name] = temp_passwords_by_type
 
             temp_passwords_by_type = list()
-            for password in self.passwords:
+            for password in filtered_passwords:
                 if password.type_id is None:
                     temp_passwords_by_type.append(password)
                         
@@ -356,6 +374,10 @@ class App:
                 )
             
             return expansion_tiles_controls
+
+        def search(e):
+            tiles_list.controls = build_expansion_tiles_controls(e.control.value)
+            self.page.update()
 
         # Components
         popup_menu = ft.PopupMenuButton(
@@ -416,7 +438,7 @@ class App:
             border_color=ft.Colors.BLUE_400,
             cursor_color=ft.Colors.BLUE_900,
             expand=True,
-            on_change=...,
+            on_change=search,
         )
 
         tiles_list = ft.ListView(
