@@ -595,9 +595,9 @@ class App:
         notes_input = ft.TextField(
             label="Notes", 
             multiline=True, 
-            min_lines=3, 
-            max_lines=3, 
-            prefix_icon=ft.Icons.NOTES,
+            min_lines=3,
+            max_lines=3,
+            prefix_icon=ft.Icons.CREATE,
             border_color=ft.Colors.BLUE_400,
             cursor_color=ft.Colors.BLUE_900,
             width=400,
