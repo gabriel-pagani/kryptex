@@ -44,8 +44,8 @@ class App:
             )
         elif type == 4:  # Info
             snack_bar = ft.SnackBar(
-                content=ft.Text(message, color=ft.Colors.WHITE),
-                bgcolor=ft.Colors.BLUE
+                content=ft.Text(message, color=ft.Colors.BLACK),
+                bgcolor=ft.Colors.GREY
             )
         else:
             raise ValueError('Invalid message type')
@@ -398,6 +398,12 @@ class App:
             tiles_list.controls = build_expansion_tiles_controls(e.control.value)
             self.page.update()
 
+        def close_dialog(e):
+            self.page.pop_dialog()
+            
+        def open_new_password_dialog(e):
+            self.page.show_dialog(new_password_dialog)
+
         # Components
         popup_menu = ft.PopupMenuButton(
             items=[
@@ -408,7 +414,7 @@ class App:
                             ft.Text("My account"),
                         ]
                     ),
-                    on_click=...,
+                    on_click=lambda e: self.show_message(4, "Coming soon"),
                 ),
                 ft.PopupMenuItem(
                     content=ft.Row(
@@ -417,7 +423,7 @@ class App:
                             ft.Text("New password"),
                         ]
                     ),
-                    on_click=...,
+                    on_click=open_new_password_dialog, 
                 ),                
                 ft.PopupMenuItem(
                     content=ft.Row(
@@ -465,6 +471,20 @@ class App:
             spacing=6,
             padding=ft.Padding.only(left=12, right=12, top=8, bottom=12),
             controls=build_expansion_tiles_controls(),
+        )
+
+        new_password_dialog = ft.AlertDialog(
+            modal=True,
+            title=ft.Text("New Password"),
+            content=ft.Column(
+                controls=[],
+                expand=True,
+            ),
+            actions=[
+                ft.TextButton("Cancel", on_click=close_dialog),
+                ft.TextButton("Save", on_click=close_dialog),
+            ],
+            actions_alignment=ft.MainAxisAlignment.END,
         )
 
         # Layout
