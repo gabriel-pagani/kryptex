@@ -52,7 +52,7 @@ class PasswordType:
     @classmethod
     def get_all(cls) -> List['PasswordType']:
         try:
-            response = execute_query("SELECT * FROM password_types")
+            response = execute_query("SELECT * FROM password_types ORDER BY name")
             
             types = []
             if response:

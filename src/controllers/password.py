@@ -108,7 +108,7 @@ class Password:
     def get_all_by_user(cls, user_id: int) -> List['Password']:
         try:
             response = execute_query(
-                "SELECT * FROM passwords WHERE user_id = ?",
+                "SELECT * FROM passwords WHERE user_id = ? ORDER BY service",
                 (user_id,),
             )
 
