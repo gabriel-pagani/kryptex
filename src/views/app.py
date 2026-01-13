@@ -452,7 +452,7 @@ class App:
         )
 
         search_input = ft.TextField(
-            hint_text="Search here for services, logins, URLs, notes...",
+            hint_text="Search here for services, logins, URLs and notes...",
             prefix_icon=ft.Icons.SEARCH,
             border_color=ft.Colors.BLUE_400,
             cursor_color=ft.Colors.BLUE_900,
