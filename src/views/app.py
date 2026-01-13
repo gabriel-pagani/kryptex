@@ -399,7 +399,17 @@ class App:
             tiles_list.controls = build_expansion_tiles_controls(e.control.value)
             self.page.update()
 
-        def close_dialog(e):
+        def close_new_password_dialog(e):
+            service_input.error = None
+            password_input.error = None
+            
+            service_input.value = ""
+            login_input.value = ""
+            password_input.value = ""
+            url_input.value = ""
+            notes_input.value = ""
+            type_dropdown.value = None
+            
             self.page.pop_dialog()
 
         def generate_random_password(e):
@@ -407,11 +417,22 @@ class App:
             password_input.update()
 
         def save_new_password(e):
+            service_input.error = None
+            password_input.error = None
+            
+            has_error = False
+
             if not service_input.value:
-                self.show_message(2, 'The service field is required!')
-                return
+                service_input.error = 'The service field is required!'
+                has_error = True
+
             if not password_input.value:
-                self.show_message(2, 'The password field is required!')
+                password_input.error = 'The password field is required!'
+                has_error = True
+            
+            if has_error:
+                service_input.update()
+                password_input.update()
                 return
 
             new_password = Password.create(
@@ -437,9 +458,10 @@ class App:
                 notes_input.value = ""
                 type_dropdown.value = None
                 
-                close_dialog(e)
+                close_new_password_dialog(e)
                 self.show_message(1, "Password saved successfully!")
             else:
+                close_new_password_dialog(e) 
                 self.show_message(3, "Error saving password! Please try again later.")
 
         def open_new_password_dialog(e):
@@ -598,12 +620,12 @@ class App:
                 ],
                 expand=True,
                 scroll=ft.ScrollMode.AUTO,
-                height=400,
+                height=450,
                 alignment=ft.MainAxisAlignment.START,
                 spacing=10
             ),
             actions=[
-                ft.TextButton("Cancel", style=ft.TextStyle(color=ft.Colors.BLUE_900), on_click=close_dialog),
+                ft.TextButton("Cancel", style=ft.TextStyle(color=ft.Colors.BLUE_900), on_click=close_new_password_dialog),
                 ft.TextButton("Save", style=ft.TextStyle(color=ft.Colors.BLUE_900), on_click=save_new_password),
             ],
             actions_alignment=ft.MainAxisAlignment.END,
