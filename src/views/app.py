@@ -305,6 +305,7 @@ class App:
             self.passwords = list()
             self.password_types = list()
             self.page.clean()
+            self.show_message(1, "Logout successful!")
             self.show_login_view()
 
         def placeholder(text: str) -> ft.Control:
