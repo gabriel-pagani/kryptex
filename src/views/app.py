@@ -1,8 +1,10 @@
 import flet as ft
 import asyncio
+import shutil
 from controllers.user import User
 from controllers.password import Password
 from controllers.password_type import PasswordType
+from database.connection import DB_PATH
 from utils.validator import validate_master_password
 from utils.cryptor import generate_password, decrypt_password
 
@@ -290,14 +292,11 @@ class App:
         self.page.add(container)
 
     def show_home_view(self):
-        async def copy_to_clipboard(text: str):
-            await ft.Clipboard().set(text)
-            self.show_message(1, "Text copied to clipboard!")
+        def export_database(e):
+            ...
 
-            await asyncio.sleep(15)
-                
-            await ft.Clipboard().set("")
-            self.show_message(4, "Clean clipboard for safety!")
+        def import_database(e):
+            ...
 
         def logout(e):
             self.user = None
@@ -568,6 +567,24 @@ class App:
                         ]
                     ),
                     on_click=lambda e: self.show_message(4, "Coming soon"),
+                ),
+                ft.PopupMenuItem(
+                    content=ft.Row(
+                        [
+                            ft.Icon(ft.Icons.DOWNLOAD, ft.Colors.BLACK),
+                            ft.Text("Export database"),
+                        ]
+                    ),
+                    on_click=export_database, 
+                ),
+                ft.PopupMenuItem(
+                    content=ft.Row(
+                        [
+                            ft.Icon(ft.Icons.UPLOAD, ft.Colors.BLACK),
+                            ft.Text("Import database"),
+                        ]
+                    ),
+                    on_click=import_database, 
                 ),
                 ft.PopupMenuItem(
                     content=ft.Row(
