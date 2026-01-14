@@ -572,7 +572,7 @@ class App:
                     content=ft.Row(
                         [
                             ft.Icon(ft.Icons.DOWNLOAD, ft.Colors.BLACK),
-                            ft.Text("Export database"),
+                            ft.Text("Export data"),
                         ]
                     ),
                     on_click=export_database, 
@@ -581,7 +581,7 @@ class App:
                     content=ft.Row(
                         [
                             ft.Icon(ft.Icons.UPLOAD, ft.Colors.BLACK),
-                            ft.Text("Import database"),
+                            ft.Text("Import data"),
                         ]
                     ),
                     on_click=import_database, 
