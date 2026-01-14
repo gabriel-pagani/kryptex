@@ -11,22 +11,24 @@ class User:
         id: int, 
         salt: bytes, 
         username: str,  
-        master_password_hash: str
+        master_password_hash: str,
+        is_admin: bool,
     ):
         self.id = id
         self.salt = salt
         self.username = username
         self.master_password_hash = master_password_hash
+        self.is_admin = is_admin
 
     @classmethod
-    def create(cls, username: str, master_password: str) -> Tuple[Optional['User'], Optional[int], Optional[str]]:
+    def create(cls, username: str, master_password: str, is_admin: bool = False) -> Tuple[Optional['User'], Optional[int], Optional[str]]:
         try:
             salt = urandom(32)
             master_password_hash = generate_hash(master_password)
 
             response = execute_query(
-                "INSERT INTO users (salt, username, master_password_hash) VALUES (?, ?, ?) RETURNING *",
-                (salt, username, master_password_hash)
+                "INSERT INTO users (salt, username, master_password_hash, is_admin) VALUES (?, ?, ?, ?) RETURNING *",
+                (salt, username, master_password_hash, is_admin)
             )
 
             if response != []:
@@ -34,7 +36,8 @@ class User:
                     id=response[0][0],
                     salt=response[0][1],
                     username=response[0][2],
-                    master_password_hash=response[0][3]
+                    master_password_hash=response[0][3],
+                    is_admin=response[0][4],
                 ), 1, "User created successfully!"
             raise Exception
             
@@ -60,7 +63,8 @@ class User:
                 id=response[0][0], 
                 salt=response[0][1], 
                 username=response[0][2], 
-                master_password_hash=response[0][3]
+                master_password_hash=response[0][3],
+                is_admin=response[0][4],
             )
 
             if verify_hash(user.master_password_hash, master_password):
@@ -73,11 +77,11 @@ class User:
             print(f"exception-on-login: {e}")
             return None, None, 3, "An unexpected error occurred! Please try logging in again later."
 
-    def update(self, current_master_password: str, new_username: Optional[str] = None, new_master_password: Optional[str] = None) -> bool:
+    def update(self, current_master_password: str, new_username: Optional[str] = None, new_master_password: Optional[str] = None, is_admin: Optional[bool] = None) -> bool:
         if not verify_hash(self.master_password_hash, current_master_password):
             return False
 
-        if not new_username and not new_master_password:
+        if not new_username and not new_master_password and not is_admin:
             return False
 
         # Usa conexão direta para garantir transação atômica (Rollback em caso de erro)
@@ -138,6 +142,13 @@ class User:
                     (new_username, self.id)
                 )
                 self.username = new_username
+
+            if is_admin is not None:
+                cursor.execute(
+                    "UPDATE users SET is_admin = ? WHERE id = ?",
+                    (is_admin, self.id)
+                )
+                self.is_admin = is_admin
 
             # Se chegamos até aqui sem erro, salva tudo
             conn.commit()
