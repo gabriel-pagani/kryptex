@@ -302,8 +302,15 @@ class App:
             except Exception as ex:
                 self.show_message(3, "Error exporting database! Please try again later.")
 
-        def import_database(e):
-            ...
+        async def import_database(e):
+            file = await ft.FilePicker().pick_files(file_type=ft.FilePickerFileType.CUSTOM, allowed_extensions=["sqlite3"], allow_multiple=False)
+            
+            try:
+                shutil.copy(file[0].path, DB_PATH)
+                self.show_message(1, "Database imported successfully!")
+                logout(e)
+            except Exception as ex:
+                self.show_message(3, "Error importing database! Please try again later.")
 
         def logout(e):
             self.user = None
