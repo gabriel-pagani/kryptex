@@ -421,7 +421,11 @@ class App:
         def open_new_password_dialog(e):
             self.page.show_dialog(new_password_dialog)
 
+        editing_password: Password | None = None
         def open_edit_password_dialog(e, password: Password):
+            nonlocal editing_password
+            editing_password = password
+            
             associated_data = f'user_id:{self.user.id};'.encode()
             decrypted_password = decrypt_password(self.user_key, password.iv, password.encrypted_password, associated_data)
 
@@ -482,7 +486,7 @@ class App:
                 close_dialog(e)
                 self.show_message(3, "Error saving password! Please try again later.")
 
-        def save_edited_password(e):
+        def save_edited_password(e, password: Password):
             service_input.error = None
             password_input.error = None
             
@@ -500,6 +504,26 @@ class App:
                 service_input.update()
                 password_input.update()
                 return
+            
+            updated = Password.get(password.id).update(
+                user_key=self.user_key,
+                type_id=int(type_dropdown.value) if type_dropdown.value else 0,
+                service=service_input.value if service_input.value else "",
+                login=login_input.value if login_input.value else "",
+                password=password_input.value if password_input.value else "",
+                url=url_input.value if url_input.value else "",
+                notes=notes_input.value if notes_input.value else "",
+            )
+
+            if updated:
+                self.passwords = Password.get_all_by_user(self.user.id)
+                tiles_list.controls = build_expansion_tiles_controls(search_input.value)
+                self.page.update()
+                close_dialog(e)
+                self.show_message(1, "Password edited successfully!")
+            else:
+                close_dialog(e)
+                self.show_message(3, "Error editing password! Please try again later.")
 
         # Components
         popup_menu = ft.PopupMenuButton(
@@ -689,7 +713,7 @@ class App:
             ),
             actions=[
                 ft.TextButton("Cancel", style=ft.TextStyle(color=ft.Colors.BLUE_900), on_click=close_dialog),
-                ft.TextButton("Save", style=ft.TextStyle(color=ft.Colors.BLUE_900), on_click=save_edited_password),
+                ft.TextButton("Save", style=ft.TextStyle(color=ft.Colors.BLUE_900), on_click=lambda e: save_edited_password(e, editing_password)),
             ],
             actions_alignment=ft.MainAxisAlignment.END,
         )
