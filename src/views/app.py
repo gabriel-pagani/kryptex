@@ -525,6 +525,38 @@ class App:
                 close_dialog(e)
                 self.show_message(3, "Error editing password! Please try again later.")
 
+        def confirm_delete_password(e):
+            if editing_password and Password.get(editing_password.id):
+                Password.get(editing_password.id).delete()
+                self.passwords = Password.get_all_by_user(self.user.id)
+                tiles_list.controls = build_expansion_tiles_controls(search_input.value)
+                self.page.update()
+                
+                self.page.pop_dialog()  # Close the deletion confirmation dialog
+                close_dialog(e)  # Close the password editing dialog
+                self.show_message(1, "Password deleted successfully!")
+            else:
+                self.page.pop_dialog()  # Close the deletion confirmation dialog
+                close_dialog(e)  # Close the password editing dialog
+                self.show_message(3, "Error deleting password! Please try again later.")
+
+        def cancel_delete_password(e):
+            self.page.pop_dialog()
+
+        delete_confirmation_dialog = ft.AlertDialog(
+            modal=True,
+            title=ft.Text("Confirm deletion"),
+            content=ft.Text("Are you sure you want to delete this password?"),
+            actions=[
+                ft.TextButton("No", on_click=cancel_delete_password),
+                ft.TextButton("Yes", on_click=confirm_delete_password),
+            ],
+            actions_alignment=ft.MainAxisAlignment.END,
+        )
+
+        def delete_password(e, password: Password):
+            self.page.show_dialog(delete_confirmation_dialog)
+
         # Components
         popup_menu = ft.PopupMenuButton(
             items=[
@@ -683,8 +715,8 @@ class App:
                 spacing=10
             ),
             actions=[
-                ft.TextButton("Cancel", style=ft.TextStyle(color=ft.Colors.BLUE_900), on_click=close_dialog),
-                ft.TextButton("Save", style=ft.TextStyle(color=ft.Colors.BLUE_900), on_click=save_new_password),
+                ft.TextButton("Cancel", on_click=close_dialog),
+                ft.TextButton("Save", on_click=save_new_password),
             ],
             actions_alignment=ft.MainAxisAlignment.END,
         )
@@ -712,8 +744,9 @@ class App:
                 spacing=10
             ),
             actions=[
-                ft.TextButton("Cancel", style=ft.TextStyle(color=ft.Colors.BLUE_900), on_click=close_dialog),
-                ft.TextButton("Save", style=ft.TextStyle(color=ft.Colors.BLUE_900), on_click=lambda e: save_edited_password(e, editing_password)),
+                ft.TextButton("Delete", on_click=lambda e: delete_password(e, editing_password)),
+                ft.TextButton("Cancel", on_click=close_dialog),
+                ft.TextButton("Save", on_click=lambda e: save_edited_password(e, editing_password)),
             ],
             actions_alignment=ft.MainAxisAlignment.END,
         )
