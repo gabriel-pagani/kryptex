@@ -20,7 +20,7 @@ def create_tables(conn: sqlite3.Connection):
             salt BLOB NOT NULL,
             username TEXT NOT NULL UNIQUE, 
             master_password_hash TEXT NOT NULL,
-            is_admin BOOLEAN DEFAULT FALSE,
+            is_admin BOOLEAN DEFAULT FALSE
         );
                        
         CREATE TABLE IF NOT EXISTS password_types (
