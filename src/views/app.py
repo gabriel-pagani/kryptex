@@ -425,6 +425,7 @@ class App:
                             side=ft.BorderSide(color=ft.Colors.TRANSPARENT, width=0)
                         ),
                         controls=tile_controls,
+                        expanded=True if filter else False
                     )
                 )
             
