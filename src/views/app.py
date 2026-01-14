@@ -4,7 +4,7 @@ from controllers.user import User
 from controllers.password import Password
 from controllers.password_type import PasswordType
 from utils.validator import validate_master_password
-from utils.cryptor import generate_password
+from utils.cryptor import generate_password, decrypt_password
 
 
 class App:
@@ -372,6 +372,7 @@ class App:
                         ft.ListTile(
                             title=ft.Text(password.service),
                             subtitle=ft.Text(password.login) if password.login else None,
+                            on_click=lambda e, p=password: open_edit_password_dialog(e, p),
                         )
                     )
 
@@ -400,7 +401,7 @@ class App:
             tiles_list.controls = build_expansion_tiles_controls(e.control.value)
             self.page.update()
 
-        def close_new_password_dialog(e):
+        def close_dialog(e):
             service_input.error = None
             password_input.error = None
             
@@ -412,6 +413,19 @@ class App:
             type_dropdown.value = ""
             
             self.page.pop_dialog()
+
+        def open_edit_password_dialog(e, password: Password):
+            associated_data = f'user_id:{self.user.id};'.encode()
+            decrypted_password = decrypt_password(self.user_key, password.iv, password.encrypted_password, associated_data)
+
+            service_input.value = password.service
+            login_input.value = password.login
+            password_input.value = decrypted_password
+            url_input.value = password.url
+            notes_input.value = password.notes
+            type_dropdown.value = int(password.type_id) if password.type_id else ""
+            
+            self.page.show_dialog(edit_password_dialog)
 
         def generate_random_password(e):
             password_input.value = generate_password()
@@ -459,10 +473,10 @@ class App:
                 notes_input.value = ""
                 type_dropdown.value = ""
                 
-                close_new_password_dialog(e)
+                close_dialog(e)
                 self.show_message(1, "Password saved successfully!")
             else:
-                close_new_password_dialog(e) 
+                close_dialog(e)
                 self.show_message(3, "Error saving password! Please try again later.")
 
         def open_new_password_dialog(e):
@@ -626,8 +640,37 @@ class App:
                 spacing=10
             ),
             actions=[
-                ft.TextButton("Cancel", style=ft.TextStyle(color=ft.Colors.BLUE_900), on_click=close_new_password_dialog),
+                ft.TextButton("Cancel", style=ft.TextStyle(color=ft.Colors.BLUE_900), on_click=close_dialog),
                 ft.TextButton("Save", style=ft.TextStyle(color=ft.Colors.BLUE_900), on_click=save_new_password),
+            ],
+            actions_alignment=ft.MainAxisAlignment.END,
+        )
+
+        edit_password_dialog = ft.AlertDialog(
+            modal=True,
+            title=ft.Text("Edit Password"),
+            content=ft.Column(
+                controls=[
+                    service_input,
+                    login_input,
+                    ft.Row(
+                        controls=[password_input, generate_password_button], 
+                        vertical_alignment=ft.CrossAxisAlignment.CENTER,
+                        spacing=10,
+                    ),
+                    type_dropdown,
+                    url_input,
+                    notes_input
+                ],
+                expand=True,
+                scroll=ft.ScrollMode.AUTO,
+                height=450,
+                alignment=ft.MainAxisAlignment.START,
+                spacing=10
+            ),
+            actions=[
+                ft.TextButton("Cancel", style=ft.TextStyle(color=ft.Colors.BLUE_900), on_click=close_dialog),
+                ft.TextButton("Save", style=ft.TextStyle(color=ft.Colors.BLUE_900), on_click=...),
             ],
             actions_alignment=ft.MainAxisAlignment.END,
         )
