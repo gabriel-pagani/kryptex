@@ -2,7 +2,7 @@ from os import urandom
 from typing import Optional, Tuple
 from sqlite3 import IntegrityError
 from database.connection import execute_query, get_connection
-from utils.cryptor import generate_hash, verify_hash, derive_master_password, encrypt_password, decrypt_password
+from utils.cryptor import generate_hash, verify_hash, derive_master_password, encrypt_data, decrypt_data
 
 
 class User:
@@ -77,7 +77,14 @@ class User:
             print(f"exception-on-login: {e}")
             return None, None, 3, "An unexpected error occurred! Please try logging in again later."
 
-    def update(self, current_master_password: str, new_username: Optional[str] = None, new_master_password: Optional[str] = None, is_admin: Optional[bool] = None) -> bool:
+    # TO UPDATE!!!
+    def update(
+            self, 
+            current_master_password: str, 
+            new_username: Optional[str] = None, 
+            new_master_password: Optional[str] = None, 
+            is_admin: Optional[bool] = None
+        ) -> bool:
         if not verify_hash(self.master_password_hash, current_master_password):
             return False
 
