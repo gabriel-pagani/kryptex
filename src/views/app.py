@@ -590,35 +590,44 @@ class App:
             self.page.show_dialog(delete_confirmation_dialog)
 
         # Components
-        popup_menu = ft.PopupMenuButton(
-            items=[
-                ft.PopupMenuItem(
-                    content=ft.Row(
-                        [
-                            ft.Icon(ft.Icons.PERSON, ft.Colors.BLACK),
-                            ft.Text("My account"),
-                        ]
-                    ),
-                    on_click=lambda e: self.show_message(4, "Coming soon"),
+        menu_items = [
+            ft.PopupMenuItem(
+                content=ft.Row(
+                    [
+                        ft.Icon(ft.Icons.PERSON, ft.Colors.BLACK),
+                        ft.Text("My account"),
+                    ]
                 ),
-                ft.PopupMenuItem(
-                    content=ft.Row(
-                        [
-                            ft.Icon(ft.Icons.DOWNLOAD, ft.Colors.BLACK),
-                            ft.Text("Export passwords"),
-                        ]
+                on_click=lambda e: self.show_message(4, "Coming soon"),
+            )
+        ]
+
+        if self.user.is_admin:
+            menu_items.extend(
+                [
+                    ft.PopupMenuItem(
+                        content=ft.Row(
+                            [
+                                ft.Icon(ft.Icons.UPLOAD, ft.Colors.BLACK),
+                                ft.Text("Import passwords"),
+                            ]
+                        ),
+                        on_click=import_database, 
                     ),
-                    on_click=export_database, 
-                ),
-                ft.PopupMenuItem(
-                    content=ft.Row(
-                        [
-                            ft.Icon(ft.Icons.UPLOAD, ft.Colors.BLACK),
-                            ft.Text("Import passwords"),
-                        ]
+                    ft.PopupMenuItem(
+                        content=ft.Row(
+                            [
+                                ft.Icon(ft.Icons.DOWNLOAD, ft.Colors.BLACK),
+                                ft.Text("Export passwords"),
+                            ]
+                        ),
+                        on_click=export_database, 
                     ),
-                    on_click=import_database, 
-                ),
+                ]
+            )
+
+        menu_items.extend(
+            [
                 ft.PopupMenuItem(
                     content=ft.Row(
                         [
@@ -637,7 +646,11 @@ class App:
                     ),
                     on_click=logout,
                 ),
-            ],
+            ]
+        )
+
+        popup_menu = ft.PopupMenuButton(
+            items=menu_items,
             icon_color=ft.Colors.WHITE,
             icon_size=30,
         )
