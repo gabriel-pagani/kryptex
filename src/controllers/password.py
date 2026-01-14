@@ -153,11 +153,12 @@ class Password:
                 return False
 
             if password:
-                associated_data = f'user_id:{self.id};'.encode()
+                associated_data = f'user_id:{self.user_id};'.encode()
                 iv, encrypted_password = encrypt_password(user_key, password, associated_data)
 
             fields = list()
             values = list()
+            
             if type_id:
                 fields.append("type_id = ?")
                 values.append(type_id)
