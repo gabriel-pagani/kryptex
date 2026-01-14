@@ -1,4 +1,4 @@
-import os, secrets
+import os, secrets, json
 from argon2 import PasswordHasher, low_level
 from cryptography.hazmat.primitives.ciphers.aead import AESGCM
 from cryptography.exceptions import InvalidTag
@@ -44,17 +44,22 @@ def generate_password() -> str:
     return password
 
 
-def encrypt_password(derived_master_password: bytes, password: str, associated_data: bytes) -> tuple[bytes, bytes]:
+def encrypt_data(derived_master_password: bytes, data: dict, associated_data: bytes) -> tuple[bytes, bytes]:
     aesgcm = AESGCM(derived_master_password)
     iv = os.urandom(12)
-    encrypted_password = aesgcm.encrypt(iv, password.encode(), associated_data)
-    return (iv, encrypted_password)
+    serialized_data = json.dumps(data).encode('utf-8')
+    encrypted_data = aesgcm.encrypt(iv, serialized_data, associated_data)
+    return (iv, encrypted_data)
 
 
-def decrypt_password(derived_master_password: bytes, iv: bytes, encrypted_password: bytes, associated_data: bytes) -> str:
+def decrypt_data(derived_master_password: bytes, iv: bytes, encrypted_data: bytes, associated_data: bytes) -> dict:
     try:
         aesgcm = AESGCM(derived_master_password)
-        decrypted_password = aesgcm.decrypt(iv, encrypted_password, associated_data).decode()
-        return decrypted_password
+        decrypted_bytes = aesgcm.decrypt(iv, encrypted_data, associated_data)
+        decrypted_data = json.loads(decrypted_bytes.decode('utf-8'))
+        return decrypted_data
+        
     except InvalidTag:
         raise ValueError("Invalid key or Corrupted data.")
+    except json.JSONDecodeError:
+        raise ValueError("Decrypted data is not valid JSON.")
