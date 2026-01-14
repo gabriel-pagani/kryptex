@@ -32,16 +32,10 @@ def create_tables(conn: sqlite3.Connection):
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             user_id INTEGER NOT NULL,
             type_id INTEGER,
-            service TEXT NOT NULL,
-            login TEXT,
             iv BLOB NOT NULL,
-            encrypted_password BLOB NOT NULL,
-            url TEXT,
-            notes TEXT,
-            favorited BOOLEAN DEFAULT FALSE,
+            encrypted_data BLOB NOT NULL,
             created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
             updated_at DATETIME,
-            deleted_at DATETIME,
 
             FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE RESTRICT,
             FOREIGN KEY (type_id) REFERENCES password_types(id) ON DELETE RESTRICT
@@ -52,12 +46,8 @@ def create_tables(conn: sqlite3.Connection):
             password_id INTEGER,
             user_id INTEGER NOT NULL,
             type_id INTEGER,
-            service TEXT NOT NULL,
-            login TEXT,
             iv BLOB NOT NULL,
-            encrypted_password BLOB NOT NULL,
-            url TEXT,
-            notes TEXT,
+            encrypted_data BLOB NOT NULL,
             changed_at DATETIME DEFAULT CURRENT_TIMESTAMP,
 
             FOREIGN KEY (password_id) REFERENCES passwords(id) ON DELETE SET NULL,
@@ -80,31 +70,23 @@ def create_tables(conn: sqlite3.Connection):
         END;
 
         CREATE TRIGGER IF NOT EXISTS trg_passwords_history
-        BEFORE UPDATE OF service, login, iv, encrypted_password, notes ON passwords
+        BEFORE UPDATE OF type_id, iv, encrypted_data ON passwords
         FOR EACH ROW
         BEGIN
             INSERT INTO password_history (
                 password_id,
                 user_id,
                 type_id,
-                service,
-                login,
                 iv,
-                encrypted_password,
-                url,
-                notes,
+                encrypted_data,
                 changed_at
             )
             VALUES (
                 OLD.id,
                 OLD.user_id,
                 OLD.type_id,
-                OLD.service,
-                OLD.login,
                 OLD.iv,
-                OLD.encrypted_password,
-                OLD.url,
-                OLD.notes,
+                OLD.encrypted_data,
                 CURRENT_TIMESTAMP
             );
         END;
@@ -117,24 +99,16 @@ def create_tables(conn: sqlite3.Connection):
                 password_id,
                 user_id,
                 type_id,
-                service,
-                login,
                 iv,
-                encrypted_password,
-                url,
-                notes,
+                encrypted_data,
                 changed_at
             )
             VALUES (
                 OLD.id,
                 OLD.user_id,
                 OLD.type_id,
-                OLD.service,
-                OLD.login,
                 OLD.iv,
-                OLD.encrypted_password,
-                OLD.url,
-                OLD.notes,
+                OLD.encrypted_data,
                 CURRENT_TIMESTAMP
             );
         END;
