@@ -69,15 +69,10 @@ class Password:
                     id=response[0][0],
                     user_id=response[0][1],
                     type_id=response[0][2],
-                    service=response[0][3],
-                    login=response[0][4],
-                    iv=response[0][5],
-                    encrypted_password=response[0][6],
-                    url=response[0][7],
-                    notes=response[0][8],
-                    created_at=response[0][9],
-                    updated_at=response[0][10],
-                    deleted_at=response[0][11],
+                    iv=response[0][3],
+                    encrypted_data=response[0][4],
+                    created_at=response[0][5],
+                    updated_at=response[0][6],
                 )
             return None
 
