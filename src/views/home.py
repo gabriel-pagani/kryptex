@@ -235,7 +235,16 @@ class HomeView:
                 show_message(self.page, 3, "Error editing password! Please try again later.")
 
         def confirm_delete_password(e, password: Password):
-            ...
+            if password and Password.get(password.id):
+                Password.get(password.id).delete()
+                
+                self.page.pop_dialog()  # Close the deletion confirmation dialog
+                close_dialog(e)         # Close the password editing dialog
+                show_message(self.page, 1, "Password deleted successfully!")
+            else:
+                self.page.pop_dialog()  # Close the deletion confirmation dialog
+                close_dialog(e)         # Close the password editing dialog
+                show_message(self.page, 3, "Error deleting password! Please try again later.")
 
         def open_delete_password_dialog(e, password: Password):
             delete_password_confirmation_dialog = ft.AlertDialog(
