@@ -341,6 +341,102 @@ class HomeView:
             actions_alignment=ft.MainAxisAlignment.END,
         )
 
+
+        def open_my_account_dialog(e):
+            current_master_password_input.value = ""
+            current_master_password_input.error = None
+            
+            account_username_input.value = self.user.username
+            account_username_input.error = None
+
+            new_master_password_input.value = ""
+            new_master_password_input.error = None
+            
+            confirm_new_master_password_input.value = ""
+            confirm_new_master_password_input.error = None
+            confirm_new_master_password_input.visible = False
+
+            self.page.show_dialog(my_account_dialog)
+
+        def save_account_changes(e):
+            # reset errors
+            current_master_password_input.error = None
+            account_username_input.error = None
+            new_master_password_input.error = None
+            confirm_new_master_password_input.error = None
+
+            current_pw = (current_master_password_input.value or "").strip()
+            new_username = (account_username_input.value or "").strip()
+            new_pw = (new_master_password_input.value or "").strip()
+            new_pw_confirm = (confirm_new_master_password_input.value or "").strip()
+
+            has_error = False
+
+            if not current_pw:
+                current_master_password_input.error = "Current master password is required!"
+                has_error = True
+
+            if (not new_username or new_username == self.user.username) and not new_pw:
+                account_username_input.error = "Nothing to update!"
+                new_master_password_input.error = "Nothing to update!"
+                has_error = True
+
+            if new_pw:
+                if not new_pw_confirm:
+                    confirm_new_master_password_input.error = "Please confirm the new master password!"
+                    has_error = True
+                elif not validate_master_password(new_pw):
+                    new_master_password_input.error = "Weak password! Use at least 15 characters."
+                    has_error = True
+                elif new_pw != new_pw_confirm:
+                    confirm_new_master_password_input.error = "The new passwords don't match!"
+                    has_error = True
+                
+            if has_error:
+                account_username_input.update()
+                current_master_password_input.update()
+                new_master_password_input.update()
+                confirm_new_master_password_input.update()
+                return
+
+            updated = self.user.update(
+                current_master_password=current_pw,
+                new_username=new_username if new_username and new_username != self.user.username else None,
+                new_master_password=new_pw if new_pw else None,
+            )
+
+            if not updated:
+                self.page.pop_dialog()
+                show_message(self.page, 3, "Error updating account! Please try again later.")
+                return
+
+            self.page.pop_dialog()
+            self.on_logout(e)
+            show_message(self.page, 1, "Account successfully updated! For your security, please log in again.")
+
+        my_account_dialog = ft.AlertDialog(
+            modal=True,
+            title=ft.Text("Update account"),
+            content=ft.Column(
+                controls=[
+                    current_master_password_input,
+                    account_username_input,
+                    new_master_password_input,
+                    confirm_new_master_password_input,
+                ],
+                expand=True,
+                scroll=ft.ScrollMode.AUTO,
+                height=360,
+                alignment=ft.MainAxisAlignment.START,
+                spacing=10,
+            ),
+            actions=[
+                ft.TextButton("Cancel", on_click=lambda e: self.page.pop_dialog()),
+                ft.TextButton("Save", on_click=save_account_changes),
+            ],
+            actions_alignment=ft.MainAxisAlignment.END,
+        )
+
         # Page components
         def build_tiles_controls() -> list[ft.Control]:
             self.user_passwords = Password.get_all_by_user(self.user.id)
@@ -408,7 +504,7 @@ class HomeView:
         menu_items = [
             ft.PopupMenuItem(
                 content=ft.Row([ft.Icon(ft.Icons.PERSON, ft.Colors.BLACK), ft.Text("Update account"),]),
-                on_click=lambda e: show_message(self.page, 4, "Coming soon"),
+                on_click=open_my_account_dialog,
             )
         ]
 
