@@ -1,5 +1,7 @@
 import flet as ft
+import shutil
 from utils.ui import show_message
+from database.connection import DB_PATH
 
 
 class HomeView:
@@ -10,6 +12,17 @@ class HomeView:
         self.on_logout = on_logout
 
     def show_home(self):
+        async def export_database(e):
+            file_picker = ft.FilePicker()
+            path = await file_picker.save_file(file_name='db.sqlite3', file_type=ft.FilePickerFileType.CUSTOM, allowed_extensions=['sqlite3'])
+            
+            if path:
+                try:
+                    shutil.copy(DB_PATH, path)
+                    show_message(self.page, 1, "Database exported successfully!")
+                except Exception as ex:
+                    show_message(self.page, 3, "Error exporting database! Please try again later.")
+        
         # Components
         menu_items = [
             ft.PopupMenuItem(
@@ -29,7 +42,7 @@ class HomeView:
                     ),
                     ft.PopupMenuItem(
                         content=ft.Row([ft.Icon(ft.Icons.DOWNLOAD, ft.Colors.BLACK), ft.Text("Export passwords"),]),
-                        # on_click=export_database, 
+                        on_click=export_database,
                     ),
                 ]
             )
