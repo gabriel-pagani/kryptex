@@ -232,7 +232,7 @@ class HomeView:
             [
                 ft.PopupMenuItem(
                     content=ft.Row([ft.Icon(ft.Icons.ADD, ft.Colors.BLACK), ft.Text("New password"),]),
-                    # on_click=open_new_password_dialog, 
+                    on_click=open_new_password_dialog,
                 ),                
                 ft.PopupMenuItem(
                     content=ft.Row([ft.Icon(ft.Icons.LOGOUT, ft.Colors.BLACK), ft.Text("Logout"),]),
