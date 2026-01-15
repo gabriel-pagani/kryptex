@@ -194,7 +194,45 @@ class HomeView:
             self.page.show_dialog(edit_password_dialog)
         
         def save_edited_password(e, password: Password):
-            ...
+            service_input.error = None
+            password_input.error = None
+            
+            has_error = False
+
+            if not service_input.value:
+                service_input.error = 'The service field is required!'
+                has_error = True
+
+            if not password_input.value:
+                password_input.error = 'The password field is required!'
+                has_error = True
+            
+            if has_error:
+                service_input.update()
+                password_input.update()
+                return
+            
+            payload = {
+                "service": service_input.value,
+                "login": login_input.value,
+                "password": password_input.value,
+                "type_id": int(type_dropdown.value) if type_dropdown.value else None,
+                "url": url_input.value,
+                "notes": notes_input.value,
+            }
+
+            updated = Password.get(password.id).update(
+                user_key=self.user_key,
+                type_id=int(type_dropdown.value) if type_dropdown.value else 0,
+                data=payload,
+            )
+
+            if updated:
+                close_dialog(e)
+                show_message(self.page, 1, "Password edited successfully!")
+            else:
+                close_dialog(e)
+                show_message(self.page, 3, "Error editing password! Please try again later.")
 
         def confirm_delete_password(e):
             ...
