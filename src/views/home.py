@@ -12,43 +12,6 @@ class HomeView:
         self.on_logout = on_logout
 
     def show_home(self):
-        async def export_database(e):
-            file_picker = ft.FilePicker()
-            path = await file_picker.save_file(file_name='db.sqlite3', file_type=ft.FilePickerFileType.CUSTOM, allowed_extensions=['sqlite3'])
-            
-            if path:
-                try:
-                    shutil.copy(DB_PATH, path)
-                    show_message(self.page, 1, "Database exported successfully!")
-                except Exception as ex:
-                    show_message(self.page, 3, "Error exporting database! Please try again later.")
-        
-        def confirm_import_database(e, import_path):
-            try:
-                shutil.copy(import_path, DB_PATH)
-                show_message(self.page, 1, "Database imported successfully!")
-                self.page.pop_dialog()
-                self.on_logout(e)
-            except Exception:
-                show_message(self.page, 3, "Error importing database! Please try again later.")
-
-        async def import_database(e):
-            file = await ft.FilePicker().pick_files(file_type=ft.FilePickerFileType.CUSTOM, allowed_extensions=["sqlite3"], allow_multiple=False)
-            
-            import_confirmation_dialog = ft.AlertDialog(
-                modal=True,
-                title=ft.Text("Confirm import"),
-                content=ft.Text("Importing a new database will overwrite all your current data. This action cannot be undone. Are you sure?"),
-                actions=[
-                    ft.TextButton("No", on_click=lambda e: self.page.pop_dialog()),
-                    ft.TextButton("Yes", on_click=lambda e: confirm_import_database(e, file[0].path)),
-                ],
-                actions_alignment=ft.MainAxisAlignment.END,
-            )
-            
-            if file:
-                self.page.show_dialog(import_confirmation_dialog)
-
         # Components
         menu_items = [
             ft.PopupMenuItem(
@@ -58,6 +21,43 @@ class HomeView:
         ]
 
         if self.user.is_admin:
+            async def export_database(e):
+                file_picker = ft.FilePicker()
+                path = await file_picker.save_file(file_name='db.sqlite3', file_type=ft.FilePickerFileType.CUSTOM, allowed_extensions=['sqlite3'])
+                
+                if path:
+                    try:
+                        shutil.copy(DB_PATH, path)
+                        show_message(self.page, 1, "Database exported successfully!")
+                    except Exception as ex:
+                        show_message(self.page, 3, "Error exporting database! Please try again later.")
+            
+            def confirm_import_database(e, import_path):
+                try:
+                    shutil.copy(import_path, DB_PATH)
+                    show_message(self.page, 1, "Database imported successfully!")
+                    self.page.pop_dialog()
+                    self.on_logout(e)
+                except Exception:
+                    show_message(self.page, 3, "Error importing database! Please try again later.")
+
+            async def import_database(e):
+                file = await ft.FilePicker().pick_files(file_type=ft.FilePickerFileType.CUSTOM, allowed_extensions=["sqlite3"], allow_multiple=False)
+                
+                import_confirmation_dialog = ft.AlertDialog(
+                    modal=True,
+                    title=ft.Text("Confirm import"),
+                    content=ft.Text("Importing a new database will overwrite all your current data. This action cannot be undone. Are you sure?"),
+                    actions=[
+                        ft.TextButton("No", on_click=lambda e: self.page.pop_dialog()),
+                        ft.TextButton("Yes", on_click=lambda e: confirm_import_database(e, file[0].path)),
+                    ],
+                    actions_alignment=ft.MainAxisAlignment.END,
+                )
+                
+                if file:
+                    self.page.show_dialog(import_confirmation_dialog)
+            
             menu_items.extend(
                 [
                     ft.PopupMenuItem(
