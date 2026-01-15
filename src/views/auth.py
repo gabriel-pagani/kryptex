@@ -109,7 +109,6 @@ class AuthView:
         
         self.page.clean()
         self.page.add(container)
-        
 
     def show_register(self):
         def do_register(e):
