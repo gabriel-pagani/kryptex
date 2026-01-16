@@ -9,13 +9,13 @@ class Main:
         self.setup_page()
         self.auth_view()
 
-    async def center_window(self):
-        await self.page.window.center()
-
     def setup_page(self):
+        async def center_window():
+            await self.page.window.center()
+        
         self.page.title = 'Kryptex'
         self.page.window.icon = r'favicon.png'
-        self.page.run_task(self.center_window)
+        self.page.run_task(center_window)
         self.page.theme_mode = ft.ThemeMode.LIGHT
         self.page.bgcolor = ft.Colors.WHITE
         self.page.padding = 0
