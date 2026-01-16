@@ -84,6 +84,14 @@ class HomeView:
             leading_icon=ft.Icons.CATEGORY,
         )
 
+        new_password_type_input = ft.TextField(
+            label="Password type name",
+            prefix_icon=ft.Icons.LABEL,
+            border_color=ft.Colors.BLUE_400,
+            cursor_color=ft.Colors.BLUE_900,
+            width=400,
+        )
+
         create_password_type_button = ft.IconButton(
             icon=ft.Icons.ADD,
             tooltip="Create new password type",
@@ -165,6 +173,7 @@ class HomeView:
         def close_dialog(e):
             service_input.error = None
             password_input.error = None
+            type_dropdown.error_text = None
             
             service_input.value = ""
             login_input.value = ""
@@ -250,6 +259,102 @@ class HomeView:
             actions=[
                 ft.TextButton("Cancel", on_click=close_dialog),
                 ft.TextButton("Save", on_click=save_new_password),
+            ],
+            actions_alignment=ft.MainAxisAlignment.END,
+        )
+
+
+        def open_new_password_type_dialog(e):
+            new_password_type_input.value = ""
+            new_password_type_input.error = None
+            self.page.show_dialog(new_password_type_dialog)
+
+        def save_new_password_type(e):
+            new_password_type_input.error = None
+            name = (new_password_type_input.value or "").strip()
+
+            if not name:
+                new_password_type_input.error = "Password type name is required!"
+                new_password_type_input.update()
+                return
+            
+            for password_type in self.password_types:
+                if name.lower() == password_type.name.lower().strip():
+                    new_password_type_input.error = "This password type already exists!"
+                    new_password_type_input.update()
+                    return
+                
+            if name.lower() == 'others':
+                    new_password_type_input.error = "This password type already exists!"
+                    new_password_type_input.update()
+                    return
+
+            created = PasswordType.create(name)
+            if created:
+                show_message(self.page, 1, "Password type created successfully!")
+                self.page.pop_dialog()
+                type_dropdown.value = str(created.id)
+                refresh_page()
+            else:
+                show_message(self.page, 3, "Error creating type! Please try again later.")
+                self.page.pop_dialog()
+                refresh_page()
+
+        def confirm_delete_password_type(e):
+            type_dropdown.error_text = None
+            selected = (type_dropdown.value or "").strip()
+            
+            if not selected:
+                type_dropdown.error_text = 'Password type "Others" cannot be deleted!'
+                return
+
+            selected_type = PasswordType.get(int(selected))
+            if not selected_type:
+                show_message(self.page, 3, "Selected password type not found.")
+                refresh_page()
+                return
+
+            def do_delete(e):
+                ok = selected_type.delete()
+                self.page.pop_dialog()
+                if ok:
+                    type_dropdown.value = ""
+                    show_message(self.page, 1, "Password type deleted successfully!")
+                    refresh_page()
+                else:
+                    show_message(self.page, 3, "Could not delete type (it may be in use).")
+
+            confirm_dialog = ft.AlertDialog(
+                modal=True,
+                title=ft.Text("Confirm deletion"),
+                content=ft.Text(f'Delete type "{selected_type.name}"?'),
+                actions=[
+                    ft.TextButton("No", on_click=lambda e: self.page.pop_dialog()),
+                    ft.TextButton("Yes", on_click=do_delete),
+                ],
+                actions_alignment=ft.MainAxisAlignment.END,
+            )
+            self.page.show_dialog(confirm_dialog)
+
+        create_password_type_button.on_click = open_new_password_type_dialog
+
+        delete_password_type_button.on_click = confirm_delete_password_type
+
+        new_password_type_dialog = ft.AlertDialog(
+            modal=True,
+            title=ft.Text("New password type"),
+            content=ft.Column(
+                controls=[
+                    new_password_type_input,
+                ],
+                expand=True,
+                scroll=ft.ScrollMode.AUTO,
+                height=100,
+                spacing=10,
+            ),
+            actions=[
+                ft.TextButton("Cancel", on_click=lambda e: self.page.pop_dialog()),
+                ft.TextButton("Save", on_click=save_new_password_type),
             ],
             actions_alignment=ft.MainAxisAlignment.END,
         )
