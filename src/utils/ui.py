@@ -1,7 +1,7 @@
 import flet as ft
 
 
-def show_message(self, type: int, message: str):
+def show_message(page: ft.Page, type: int, message: str):
     colors = {
         1: [ft.Colors.GREEN, ft.Colors.WHITE],  # Success
         2: [ft.Colors.YELLOW, ft.Colors.BLACK], # Warning
@@ -9,7 +9,7 @@ def show_message(self, type: int, message: str):
         4: [ft.Colors.GREY, ft.Colors.BLACK],   # Info
     }
 
-    self.page.overlay.append(
+    page.overlay.append(
         ft.SnackBar(
             content=ft.Text(message, color=colors[type][1]),
             bgcolor=colors[type][0],
@@ -17,4 +17,4 @@ def show_message(self, type: int, message: str):
         )
     )
 
-    self.page.update()
+    page.update()
