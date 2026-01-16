@@ -26,6 +26,9 @@ class User:
             salt = urandom(32)
             master_password_hash = generate_hash(master_password)
 
+            total_users = execute_query("SELECT COUNT(1) FROM users")
+            is_admin = True if total_users[0][0] == 0 else is_admin
+            
             response = execute_query(
                 "INSERT INTO users (salt, username, master_password_hash, is_admin) VALUES (?, ?, ?, ?) RETURNING *",
                 (salt, username, master_password_hash, is_admin)
