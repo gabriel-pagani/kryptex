@@ -1,7 +1,5 @@
 import flet as ft
 from controllers.user import User
-from controllers.password import Password
-from controllers.password_type import PasswordType
 from utils.ui import show_message
 from utils.validator import validate_master_password
 
