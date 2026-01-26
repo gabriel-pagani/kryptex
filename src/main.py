@@ -16,6 +16,10 @@ class Main:
         
         self.page.title = 'Kryptex'
         self.page.window.icon = os.path.join(os.path.dirname(__file__), "assets", "favicon.png")
+        self.page.window.width = 500
+        self.page.window.min_width = 500
+        self.page.window.height = 750
+        self.page.window.min_height = 750
         self.page.run_task(center_window)
         self.page.theme_mode = ft.ThemeMode.LIGHT
         self.page.bgcolor = ft.Colors.WHITE
