@@ -375,6 +375,16 @@ class HomeView:
             url_input.value = decrypted_data.get("url")
             notes_input.value = decrypted_data.get("notes")
             
+            last_changed_str = password.updated_at or password.created_at
+            if last_changed_str:
+                try:
+                    last_changed = datetime.strptime(last_changed_str, "%Y-%m-%d %H:%M:%S")
+                    days_passed = (datetime.now() - last_changed).days
+                    if days_passed >= 90:
+                        password_input.error = f"No changes in the last {days_passed} days!"
+                except Exception:
+                    pass
+
             self.page.show_dialog(edit_password_dialog)
         
         def save_edited_password(e, password: Password):
