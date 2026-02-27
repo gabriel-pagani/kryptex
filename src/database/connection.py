@@ -34,7 +34,7 @@ def create_tables(conn: sqlite3.Connection):
             type_id INTEGER,
             iv BLOB NOT NULL,
             encrypted_data BLOB NOT NULL,
-            created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+            created_at DATETIME DEFAULT (datetime('now', 'localtime')),
             updated_at DATETIME,
 
             FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE RESTRICT,
@@ -48,7 +48,7 @@ def create_tables(conn: sqlite3.Connection):
             type_id INTEGER,
             iv BLOB NOT NULL,
             encrypted_data BLOB NOT NULL,
-            changed_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+            changed_at DATETIME DEFAULT (datetime('now', 'localtime')),
 
             FOREIGN KEY (password_id) REFERENCES passwords(id) ON DELETE SET NULL,
             FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE RESTRICT,
@@ -65,7 +65,7 @@ def create_tables(conn: sqlite3.Connection):
         WHEN NEW.updated_at IS OLD.updated_at
         BEGIN
             UPDATE passwords
-            SET updated_at = CURRENT_TIMESTAMP
+            SET updated_at = datetime('now', 'localtime')
             WHERE id = NEW.id;
         END;
 
@@ -87,7 +87,7 @@ def create_tables(conn: sqlite3.Connection):
                 OLD.type_id,
                 OLD.iv,
                 OLD.encrypted_data,
-                CURRENT_TIMESTAMP
+                datetime('now', 'localtime')
             );
         END;
 
@@ -109,7 +109,7 @@ def create_tables(conn: sqlite3.Connection):
                 OLD.type_id,
                 OLD.iv,
                 OLD.encrypted_data,
-                CURRENT_TIMESTAMP
+                datetime('now', 'localtime')
             );
         END;
     """)
