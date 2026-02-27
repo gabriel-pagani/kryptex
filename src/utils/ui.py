@@ -1,12 +1,12 @@
 import flet as ft
 
 
-def show_message(page: ft.Page, type: int, message: str):
+def show_message(page: ft.Page, type: str, message: str):
     colors = {
-        1: [ft.Colors.GREEN, ft.Colors.WHITE],  # Success
-        2: [ft.Colors.YELLOW, ft.Colors.BLACK], # Warning
-        3: [ft.Colors.RED, ft.Colors.WHITE],    # Error
-        4: [ft.Colors.GREY, ft.Colors.BLACK],   # Info
+        "success": [ft.Colors.GREEN, ft.Colors.WHITE],   # Success
+        "warning": [ft.Colors.YELLOW, ft.Colors.BLACK],  # Warning
+        "error": [ft.Colors.RED, ft.Colors.WHITE],       # Error
+        "info": [ft.Colors.GREY, ft.Colors.BLACK],       # Info
     }
 
     page.overlay.append(

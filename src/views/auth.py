@@ -15,9 +15,9 @@ class AuthView:
             master_password = master_password_input.value
 
             if not username:
-                show_message(self.page, 2, 'The username field is required!')
+                show_message(self.page, 'warning', 'The username field is required!')
             elif not master_password:
-                show_message(self.page, 2, 'The master password field is required!')
+                show_message(self.page, 'warning', 'The master password field is required!')
             else:
                 user, user_key, msg_type, msg = User.login(username, master_password)
                 if user: 
@@ -115,15 +115,15 @@ class AuthView:
             master_password_confirmed = master_password_confirmed_input.value
 
             if not username:
-                show_message(self.page, 2, 'The username field is required!')
+                show_message(self.page, 'warning', 'The username field is required!')
             elif not master_password:
-                show_message(self.page, 2, 'The master password field is required!')
+                show_message(self.page, 'warning', 'The master password field is required!')
             elif not master_password_confirmed:
-                show_message(self.page, 2, 'The master password confirmation field is required!')
+                show_message(self.page, 'warning', 'The master password confirmation field is required!')
             elif master_password != master_password_confirmed:
-                show_message(self.page, 2, "The passwords don't match!")
+                show_message(self.page, 'warning', "The passwords don't match!")
             elif not validate_master_password(master_password):
-                show_message(self.page, 2, "Weak password! The password must contain at least 15 characters or more.")
+                show_message(self.page, 'warning', "Weak password! The password must contain at least 15 characters or more.")
             else:
                 new_user, msg_type, msg = User.create(username, master_password)
 

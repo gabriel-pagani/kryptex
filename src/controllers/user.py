@@ -41,15 +41,15 @@ class User:
                     username=response[0][2],
                     master_password_hash=response[0][3],
                     is_admin=response[0][4],
-                ), 1, "User created successfully!"
+                ), "success", "User created successfully!"
             raise Exception
             
         except IntegrityError as e:
             print(f"integrity-error: {e}")
-            return None, 2, f"User already exists!"
+            return None, "warning", f"User already exists!"
         except Exception as e:
             print(f"exception-on-create: {e}")
-            return None, 3, f"An unexpected error occurred! Please try creating your account again later."
+            return None, "error", f"An unexpected error occurred! Please try creating your account again later."
 
     @classmethod
     def login(cls, username: str, master_password: str) -> Tuple[Optional['User'], Optional[bytes], Optional[int], Optional[str]]:
@@ -60,7 +60,7 @@ class User:
             )
 
             if not response:
-                return None, None, 2, "Invalid username and/or master password!"
+                return None, None, "warning", "Invalid username and/or master password!"
 
             user = cls(
                 id=response[0][0], 
@@ -72,13 +72,13 @@ class User:
 
             if verify_hash(user.master_password_hash, master_password):
                 user_key = derive_master_password(master_password, user.salt)
-                return user, user_key, 1, "Login successful!"
+                return user, user_key, "success", "Login successful!"
             else:
-                return None, None, 2, "Invalid username and/or master password!"
+                return None, None, "warning", "Invalid username and/or master password!"
 
         except Exception as e:
             print(f"exception-on-login: {e}")
-            return None, None, 3, "An unexpected error occurred! Please try logging in again later."
+            return None, None, "error", "An unexpected error occurred! Please try logging in again later."
 
     def update(
             self, 

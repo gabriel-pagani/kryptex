@@ -1,6 +1,7 @@
 import flet as ft
 import shutil
 import time
+from datetime import datetime
 from utils.ui import show_message
 from utils.cryptor import generate_password, decrypt_data
 from utils.validator import validate_master_password
@@ -224,11 +225,11 @@ class HomeView:
 
             if new_password:
                 close_dialog(e)
-                show_message(self.page, 1, "Password saved successfully!")
+                show_message(self.page, "success", "Password saved successfully!")
                 refresh_page()
             else:
                 close_dialog(e)
-                show_message(self.page, 3, "Error saving password! Please try again later.")   
+                show_message(self.page, "error", "Error saving password! Please try again later.")   
         
         new_password_dialog = ft.AlertDialog(
             modal=True,
@@ -291,12 +292,12 @@ class HomeView:
 
             created = PasswordType.create(name)
             if created:
-                show_message(self.page, 1, "Password type created successfully!")
+                show_message(self.page, "success", "Password type created successfully!")
                 self.page.pop_dialog()
                 type_dropdown.value = str(created.id)
                 refresh_page()
             else:
-                show_message(self.page, 3, "Error creating type! Please try again later.")
+                show_message(self.page, "error", "Error creating type! Please try again later.")
                 self.page.pop_dialog()
                 refresh_page()
 
@@ -318,7 +319,7 @@ class HomeView:
                 self.page.pop_dialog()
                 if ok:
                     type_dropdown.value = ""
-                    show_message(self.page, 1, "Password type deleted successfully!")
+                    show_message(self.page, "success", "Password type deleted successfully!")
                     refresh_page()
                 else:
                     type_dropdown.error_text = "Warning! This type may be in use."
@@ -412,11 +413,11 @@ class HomeView:
 
             if updated:
                 close_dialog(e)
-                show_message(self.page, 1, "Password edited successfully!")
+                show_message(self.page, "success", "Password edited successfully!")
                 refresh_page()
             else:
                 close_dialog(e)
-                show_message(self.page, 3, "Error editing password! Please try again later.")
+                show_message(self.page, "error", "Error editing password! Please try again later.")
 
         def confirm_delete_password(e, password: Password):
             if password and Password.get(password.id):
@@ -424,12 +425,12 @@ class HomeView:
                 
                 self.page.pop_dialog()  # Close the deletion confirmation dialog
                 close_dialog(e)         # Close the password editing dialog
-                show_message(self.page, 1, "Password deleted successfully!")
+                show_message(self.page, "success", "Password deleted successfully!")
                 refresh_page()
             else:
                 self.page.pop_dialog()  # Close the deletion confirmation dialog
                 close_dialog(e)         # Close the password editing dialog
-                show_message(self.page, 3, "Error deleting password! Please try again later.")
+                show_message(self.page, "error", "Error deleting password! Please try again later.")
 
         def open_delete_password_dialog(e, password: Password):
             delete_password_confirmation_dialog = ft.AlertDialog(
@@ -545,12 +546,12 @@ class HomeView:
 
             if not updated:
                 self.page.pop_dialog()
-                show_message(self.page, 3, "Error updating account! Please try again later.")
+                show_message(self.page, "error", "Error updating account! Please try again later.")
                 return
 
             self.page.pop_dialog()
             self.on_logout(e)
-            show_message(self.page, 1, "Account successfully updated! For your security, please log in again.")
+            show_message(self.page, "success", "Account successfully updated! For your security, please log in again.")
 
         my_account_dialog = ft.AlertDialog(
             modal=True,
@@ -658,18 +659,18 @@ class HomeView:
                 if path:
                     try:
                         shutil.copy(DB_PATH, path)
-                        show_message(self.page, 1, "Database exported successfully!")
+                        show_message(self.page, "success", "Database exported successfully!")
                     except Exception as ex:
-                        show_message(self.page, 3, "Error exporting database! Please try again later.")
+                        show_message(self.page, "error", "Error exporting database! Please try again later.")
             
             def confirm_import_database(e, import_path):
                 try:
                     shutil.copy(import_path, DB_PATH)
-                    show_message(self.page, 1, "Database imported successfully!")
+                    show_message(self.page, "success", "Database imported successfully!")
                     self.page.pop_dialog()
                     self.on_logout(e)
                 except Exception:
-                    show_message(self.page, 3, "Error importing database! Please try again later.")
+                    show_message(self.page, "error", "Error importing database! Please try again later.")
 
             async def import_database(e):
                 file = await ft.FilePicker().pick_files(file_type=ft.FilePickerFileType.CUSTOM, allowed_extensions=["sqlite3"], allow_multiple=False)
