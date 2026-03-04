@@ -54,6 +54,14 @@ def create_tables(conn: sqlite3.Connection):
             FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE RESTRICT,
             FOREIGN KEY (type_id) REFERENCES password_types(id) ON DELETE SET NULL
         );
+                       
+        CREATE TABLE IF NOT EXISTS login_history (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            user_id INTEGER NOT NULL,
+            login_date DATETIME DEFAULT (datetime('now', 'localtime')),
+                       
+            FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+        );
                              
         CREATE INDEX IF NOT EXISTS idx_passwords_user ON passwords(user_id);
         CREATE INDEX IF NOT EXISTS idx_passwords_type ON passwords(type_id);

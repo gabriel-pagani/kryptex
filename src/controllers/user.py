@@ -72,6 +72,7 @@ class User:
 
             if verify_hash(user.master_password_hash, master_password):
                 user_key = derive_master_password(master_password, user.salt)
+                execute_query("INSERT INTO login_history (user_id) VALUES (?)", (user.id,))
                 return user, user_key, "success", "Login successful!"
             else:
                 return None, None, "warning", "Invalid username and/or master password!"
@@ -188,3 +189,21 @@ class User:
         except Exception as e:
             print(f"exception-on-delete: {e}")
             return False
+        
+    @classmethod
+    def get_last_logged_user(cls) -> Optional[str]:
+        try:
+            response = execute_query(
+                """
+                SELECT u.username 
+                FROM login_history lh
+                JOIN users u ON lh.user_id = u.id
+                WHERE lh.login_date >= datetime('now', 'localtime', '-5 days')
+                ORDER BY lh.login_date DESC
+                LIMIT 1
+                """
+            )
+            return response[0][0] if response else None
+        except Exception as e:
+            print(f"exception-on-get-last-username: {e}")
+            return None

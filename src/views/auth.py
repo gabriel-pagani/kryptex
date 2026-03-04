@@ -38,10 +38,13 @@ class AuthView:
             color=ft.Colors.BLUE_900
         )
 
+        last_username = User.get_last_logged_user() or ""
         username_input = ft.TextField(
             label="Username",
             prefix_icon=ft.Icons.PERSON,
             hint_text="Enter your username here...",
+            value=last_username,
+            autofocus=not bool(last_username),
             width=400,
             border_color=ft.Colors.BLUE_400,
             cursor_color=ft.Colors.BLUE_900,
@@ -52,6 +55,7 @@ class AuthView:
             label="Master password",
             prefix_icon=ft.Icons.LOCK,
             hint_text="Enter your master password here...",
+            autofocus=bool(last_username),
             password=True,
             width=400,
             border_color=ft.Colors.BLUE_400,
