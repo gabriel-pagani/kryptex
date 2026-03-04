@@ -9,7 +9,7 @@ class AuthView:
         self.page = page
         self.on_login_success = on_login_success
 
-    def show_login(self):
+    def show_login(self, prefilled_username: str = None):
         def do_login(e):
             username = username_input.value
             master_password = master_password_input.value
@@ -38,7 +38,7 @@ class AuthView:
             color=ft.Colors.BLUE_900
         )
 
-        last_username = User.get_last_logged_user() or ""
+        last_username = prefilled_username or User.get_last_logged_user() or ""
         username_input = ft.TextField(
             label="Username",
             prefix_icon=ft.Icons.PERSON,
@@ -133,7 +133,7 @@ class AuthView:
 
                 if new_user:
                     show_message(self.page, msg_type, msg)
-                    self.show_login()
+                    self.show_login(prefilled_username=username)
                 
                 else:
                     show_message(self.page, msg_type, msg)
